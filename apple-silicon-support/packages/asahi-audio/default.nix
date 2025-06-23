@@ -1,46 +1,42 @@
-{ stdenv
-, lib
-, fetchFromGitHub
-, lsp-plugins
-, bankstown-lv2
-, triforce-lv2
+{
+  lib,
+  stdenvNoCC,
+  fetchFromGitHub,
+  lsp-plugins,
+  bankstown-lv2,
+  triforce-lv2,
+  nix-update-script,
 }:
-
-stdenv.mkDerivation rec {
+stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "asahi-audio";
   # tracking: https://src.fedoraproject.org/rpms/asahi-audio
-  version = "3.3";
+  version = "3.4";
 
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "asahi-audio";
-    rev = "v${version}";
-    hash = "sha256-p0M1pPxov+wSLT2F4G6y5NZpCXzbjZkzle+75zQ4xxU=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-7AuPkR/M1a4zB9+dJuOuv9uTp+kIqPlxVOXipsyGGz8=";
   };
 
-  preBuild = ''
-    export PREFIX=$out
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
-    readarray -t configs < <(\
-          find . \
-                -name '*.conf' -or \
-                -name '*.json' -or \
-                -name '*.lua'
-    )
+  fixupPhase = ''
+    runHook preFixup
 
-    substituteInPlace "''${configs[@]}" --replace \
-          "/usr/share/asahi-audio" \
-          "$out/asahi-audio"
+    for config_file in $(find $out -type f -not -name '*.wav') ; do
+        substituteInPlace $config_file --replace-warn "/usr/" "$out/"
+    done
+
+    runHook postFixup
   '';
 
-  postInstall = ''
-    # no need to link the asahi-audio dir globally
-    mv $out/share/asahi-audio $out
-  '';
-
-  passthru.requiredLv2Packages = [
-    lsp-plugins
-    bankstown-lv2
-    triforce-lv2
-  ];
-}
+  passthru = {
+    updateScript = nix-update-script { };
+    requiredLv2Packages = [
+      lsp-plugins
+      bankstown-lv2
+      triforce-lv2
+    ];
+  };
+})
