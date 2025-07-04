@@ -8,7 +8,6 @@
     in
       pkgs'.linux-asahi.override {
         _kernelPatches = config.boot.kernelPatches;
-        withRust = config.hardware.asahi.withRust;
       };
 
     # we definitely want to use CONFIG_ENERGY_MODEL, and
@@ -94,13 +93,7 @@
   imports = [
     (lib.mkRemovedOptionModule [ "hardware" "asahi" "addEdgeKernelConfig" ]
       "All edge kernel config options are now the default.")
+    (lib.mkRemovedOptionModule [ "hardware" "asahi" "withRust" ]
+      "Rust support is now the default.")
   ];
-
-  options.hardware.asahi.withRust = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
-    description = ''
-      Build the Asahi Linux kernel with Rust support.
-    '';
-  };
 }
