@@ -137,7 +137,7 @@ Start the Mac, and U-Boot should start booting from the USB drive automatically.
 
 <details>
   <summary>If "mounting `/dev/root` on `/mnt-root/iso` failed: No such file or directory" during boot…</summary>
-  
+
   1. Was the ISO transferred to your flash drive correctly as described above? `dd` is the only correct way to do this. The ISO must be transferred to the drive block device itself, not a partition on the drive.
   2. There is sometimes a [race condition](https://github.com/nix-community/nixos-apple-silicon/issues/60) which causes booting to fail. Reboot the machine and try again.
   3. Some flash drives have quirks. Try a different drive, or use the following steps:
@@ -168,7 +168,7 @@ Identify the number of the new root partition (type code 8300, typically second 
 ```
 nixos# sgdisk /dev/nvme0n1 -p
 Disk /dev/nvme0n1: 244276265 sectors, 931.8 GiB
-Model: APPLE SSD AP1024Q                       
+Model: APPLE SSD AP1024Q
 Sector size (logical/physical): 4096/4096 bytes
 Disk identifier (GUID): 27054D2E-307A-41AA-9A8C-3864D56FAF6B
 Partition table holds up to 128 entries
@@ -180,9 +180,9 @@ Total free space is 0 sectors (0 bytes)
 Number  Start (sector)    End (sector)  Size       Code  Name
    1               6          128005   500.0 MiB   FFFF  iBootSystemContainer
    2          128006       219854567   838.2 GiB   AF0A  Container
-   3       219854568       220465127   2.3 GiB     AF0A  
-   4       220465128       220590311   489.0 MiB   EF00  
-   5       220590312       242965550   85.4 GiB    8300  
+   3       219854568       220465127   2.3 GiB     AF0A
+   4       220465128       220590311   489.0 MiB   EF00
+   5       220590312       242965550   85.4 GiB    8300
    6       242965551       244276259   5.0 GiB     FFFF  RecoveryOSContainer
 ```
 
@@ -230,15 +230,7 @@ Add the `./apple-silicon-support` directory to the imports list and switch off t
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
-Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi. The Asahi Linux installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the Apple Silicon support module will automatically reference the files in the EFI system partition and incorporate them into your configuration to be managed by the normal NixOS mechanisms.
-
-Currently, the only supported way to update the peripheral firmware files is to destroy and re-create the EFI system partition, so they will not change unexpectedly. If you do not want the impurity of referencing them (or are using flakes where this is prohibited), copy them off the EFI system partition (e.g. on the installation ISO `mkdir -p /mnt/etc/nixos/firmware && cp /mnt/boot/asahi/{all_firmware.tar.gz,kernelcache*} /mnt/etc/nixos/firmware`) and specify this path in your configuration:
-```
-  # Specify path to peripheral firmware files.
-  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
-  # Or disable extraction and management of them completely.
-  # hardware.asahi.extractPeripheralFirmware = false;
-```
+Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi. The Asahi Linux installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the Apple Silicon support module will also load the firmware from EFI system partition rather than being managed by the normal NixOS mechanisms.
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 ```
