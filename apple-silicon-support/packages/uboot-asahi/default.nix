@@ -2,6 +2,7 @@
 , fetchFromGitHub
 , buildUBoot
 , m1n1
+, appendConfig ? ""
 }:
 
 (buildUBoot rec {
@@ -27,6 +28,8 @@
     CONFIG_VIDEO_FONT_SUN12X22=n
     CONFIG_VIDEO_FONT_16X32=y
     CONFIG_CMD_BOOTMENU=y
+
+    ${appendConfig}
   '';
 }).overrideAttrs (o: {
   # nixos's downstream patches are not applicable
