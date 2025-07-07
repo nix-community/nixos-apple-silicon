@@ -98,7 +98,7 @@
 
   options.hardware.asahi.withRust = lib.mkOption {
     type = lib.types.bool;
-    default = false;
+    default = true;
     description = ''
       Build the Asahi Linux kernel with Rust support.
     '';
