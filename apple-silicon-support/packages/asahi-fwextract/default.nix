@@ -8,7 +8,7 @@
 
 python3.pkgs.buildPythonApplication rec {
   pname = "asahi-fwextract";
-  version = "0.7.8";
+  version = "0.7.9";
   pyproject = true;
 
   build-system = [ python3.pkgs.setuptools ];
@@ -18,7 +18,7 @@ python3.pkgs.buildPythonApplication rec {
     owner = "AsahiLinux";
     repo = "asahi-installer";
     rev = "v${version}";
-    hash = "sha256-UmgHWKIRbcg9PK44YPPM4tyuEDC0+ANKO3Mzc4N9RHo=";
+    hash = "sha256-vbhepoZ52k5tW2Gd7tfQTZ5CLqzhV7dUcVh6+AYwECk=";
   };
 
   postPatch = ''
