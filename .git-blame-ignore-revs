@@ -1,0 +1,8 @@
+# You can set this file as a default ignore file for blame by running
+# the following command.
+#
+# $ git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+
+# treewide: format all nix files
+d0cf7ca9c4f93cc274ae959a0e41d6473ed1d169

@@ -7,67 +7,101 @@
     };
 
     flake-compat.url = "github:nix-community/flake-compat";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs = { self, ... }@inputs:
+  outputs =
+    { self, ... }@inputs:
     let
       # build platforms supported for uboot in nixpkgs
-      systems = [ "aarch64-linux" "x86_64-linux" ]; # "i686-linux" omitted
+      systems = [
+        "aarch64-linux"
+        "x86_64-linux"
+      ]; # "i686-linux" omitted
 
       forAllSystems = inputs.nixpkgs.lib.genAttrs systems;
+
+      treefmtEval = forAllSystems (
+        system:
+        let
+          pkgs = inputs.nixpkgs.legacyPackages.${system};
+        in
+        inputs.treefmt-nix.lib.evalModule pkgs {
+          projectRootFile = "flake.nix";
+          programs.nixfmt.enable = true;
+          programs.deadnix.enable = true;
+        }
+      );
     in
-      {
-        overlays = rec {
-          apple-silicon-overlay = import ./apple-silicon-support/packages/overlay.nix;
-          default = apple-silicon-overlay;
-        };
+    {
+      formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
+      checks = forAllSystems (system: {
+        formatting = treefmtEval.${system}.config.build.check self;
+      });
 
-        nixosModules = rec {
-          apple-silicon-support = ./apple-silicon-support;
-          default = apple-silicon-support;
-        };
+      overlays = rec {
+        apple-silicon-overlay = import ./apple-silicon-support/packages/overlay.nix;
+        default = apple-silicon-overlay;
+      };
 
-        packages = forAllSystems (system:
-          let
-            pkgs = import inputs.nixpkgs {
-              crossSystem.system = "aarch64-linux";
-              localSystem.system = system;
-              overlays = [
-                self.overlays.default
-              ];
-            };
-          in {
-            inherit (pkgs) m1n1 uboot-asahi linux-asahi asahi-fwextract mesa-asahi-edge;
-            inherit (pkgs) asahi-audio;
+      nixosModules = rec {
+        apple-silicon-support = ./apple-silicon-support;
+        default = apple-silicon-support;
+      };
 
-            installer-bootstrap =
-              let
-                installer-system = inputs.nixpkgs.lib.nixosSystem {
-                  inherit system;
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = import inputs.nixpkgs {
+            crossSystem.system = "aarch64-linux";
+            localSystem.system = system;
+            overlays = [
+              self.overlays.default
+            ];
+          };
+        in
+        {
+          inherit (pkgs)
+            m1n1
+            uboot-asahi
+            linux-asahi
+            asahi-fwextract
+            mesa-asahi-edge
+            ;
+          inherit (pkgs) asahi-audio;
 
-                  # make sure this matches the post-install
-                  # `hardware.asahi.pkgsSystem`
-                  pkgs = import inputs.nixpkgs {
-                    crossSystem.system = "aarch64-linux";
-                    localSystem.system = system;
-                    overlays = [ self.overlays.default ];
-                  };
+          installer-bootstrap =
+            let
+              installer-system = inputs.nixpkgs.lib.nixosSystem {
+                inherit system;
 
-                  specialArgs = {
-                    modulesPath = inputs.nixpkgs + "/nixos/modules";
-                  };
-
-                  modules = [
-                    ./iso-configuration
-                    { hardware.asahi.pkgsSystem = system; }
-                  ];
+                # make sure this matches the post-install
+                # `hardware.asahi.pkgsSystem`
+                pkgs = import inputs.nixpkgs {
+                  crossSystem.system = "aarch64-linux";
+                  localSystem.system = system;
+                  overlays = [ self.overlays.default ];
                 };
 
-                config = installer-system.config;
-              in (config.system.build.isoImage.overrideAttrs (old: {
-                # add ability to access the whole config from the command line
-                passthru = (old.passthru or {}) // { inherit config; };
-              }));
-          });
-      };
+                specialArgs = {
+                  modulesPath = inputs.nixpkgs + "/nixos/modules";
+                };
+
+                modules = [
+                  ./iso-configuration
+                  { hardware.asahi.pkgsSystem = system; }
+                ];
+              };
+
+              config = installer-system.config;
+            in
+            (config.system.build.isoImage.overrideAttrs (old: {
+              # add ability to access the whole config from the command line
+              passthru = (old.passthru or { }) // {
+                inherit config;
+              };
+            }));
+        }
+      );
+    };
 }

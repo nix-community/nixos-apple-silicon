@@ -1,5 +1,5 @@
 # configuration that is specific to the ISO
-{ config, pkgs, lib, ... }:
+{ config, lib, ... }:
 {
   imports = [
     ./installer-configuration.nix
