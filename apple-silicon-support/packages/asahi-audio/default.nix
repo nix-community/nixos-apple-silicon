@@ -1,9 +1,10 @@
-{ stdenv
-, lib
-, fetchFromGitHub
-, lsp-plugins
-, bankstown-lv2
-, triforce-lv2
+{
+  stdenv,
+  lib,
+  fetchFromGitHub,
+  lsp-plugins,
+  bankstown-lv2,
+  triforce-lv2,
 }:
 
 stdenv.mkDerivation rec {
