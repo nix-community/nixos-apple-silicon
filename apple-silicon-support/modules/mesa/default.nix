@@ -15,6 +15,8 @@
     (lib.mkIf config.hardware.asahi.useExperimentalGPUDriver {
       # install the Asahi Mesa version
       hardware.graphics.package = config.hardware.asahi.pkgs.mesa-asahi-edge;
+      # required for in-kernel GPU driver
+      hardware.asahi.withRust = true;
     })
   ]);
 
