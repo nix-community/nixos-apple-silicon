@@ -37,7 +37,7 @@
               ];
             };
           in {
-            inherit (pkgs) m1n1 uboot-asahi asahi-fwextract mesa-asahi-edge;
+            inherit (pkgs) m1n1 uboot-asahi asahi-fwextract;
             inherit (pkgs) asahi-audio;
 
             linux-asahi = pkgs.linux-asahi.kernel;
