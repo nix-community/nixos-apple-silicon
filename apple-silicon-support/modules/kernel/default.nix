@@ -1,6 +1,6 @@
 # the Asahi Linux kernel and options that must go along with it
 
-{ config, pkgs, lib, ... }:
+{ config, lib, ... }:
 {
   config = lib.mkIf config.hardware.asahi.enable {
     boot.kernelPackages = let
@@ -20,6 +20,7 @@
       # list of initrd modules stolen from
       # https://github.com/AsahiLinux/asahi-scripts/blob/f461f080a1d2575ae4b82879b5624360db3cff8c/initcpio/install/asahi
       "apple-mailbox"
+      "apple_nvmem_spmi"
       "nvme_apple"
       "pinctrl-apple-gpio"
       "macsmc"
@@ -38,9 +39,7 @@
       "spi-hid-apple"
       "spi-hid-apple-of"
       "rtc-macsmc"
-      "simple-mfd-spmi"
       "spmi-apple-controller"
-      "nvmem_spmi_mfd"
       "apple-dockchannel"
       "dockchannel-hid"
       "apple-rtkit-helper"
