@@ -28,9 +28,7 @@
   swapDevices = lib.mkOverride 60 [ ];
   fileSystems = lib.mkOverride 60 config.lib.isoFileSystems;
 
-  boot.postBootCommands = let
-    inherit (config.hardware.asahi.pkgs) asahi-fwextract;
-  in ''
+  boot.postBootCommands = ''
     for o in $(</proc/cmdline); do
       case "$o" in
         live.nixos.passwd=*)
@@ -39,25 +37,7 @@
           ;;
       esac
     done
-
-    echo Extracting Asahi firmware...
-    mkdir -p /tmp/.fwsetup/{esp,extracted}
-
-    mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /tmp/.fwsetup/esp
-    ${asahi-fwextract}/bin/asahi-fwextract /tmp/.fwsetup/esp/asahi /tmp/.fwsetup/extracted
-    umount /tmp/.fwsetup/esp
-
-    pushd /tmp/.fwsetup/
-    cat /tmp/.fwsetup/extracted/firmware.cpio | ${pkgs.cpio}/bin/cpio -id --quiet --no-absolute-filenames
-    mkdir -p /lib/firmware
-    mv vendorfw/* /lib/firmware
-    popd
-    rm -rf /tmp/.fwsetup
   '';
-
-  # can't legally be incorporated into the installer image
-  # (and is automatically extracted at boot above)
-  hardware.asahi.extractPeripheralFirmware = false;
 
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
@@ -88,7 +68,6 @@
     enable = true;
     settings.General.EnableNetworkConfiguration = true;
   };
-  
 
   nixpkgs.overlays = [
     (final: prev: {
