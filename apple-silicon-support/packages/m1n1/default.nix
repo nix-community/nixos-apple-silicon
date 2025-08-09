@@ -52,21 +52,21 @@ stdenv.mkDerivation rec {
   };
   cargoVendorDir = ".";
 
-  makeFlags =
-    [ "ARCH=${stdenv.cc.targetPrefix}" ]
-    ++ lib.optional isRelease "RELEASE=1"
-    ++ lib.optional withChainloading "CHAINLOADING=1";
+  makeFlags = [
+    "ARCH=${stdenv.cc.targetPrefix}"
+  ]
+  ++ lib.optional isRelease "RELEASE=1"
+  ++ lib.optional withChainloading "CHAINLOADING=1";
 
-  nativeBuildInputs =
-    [
-      dtc
-    ]
-    ++ lib.optionals withChainloading [
-      rustPackages.rustc
-      rustPackages.cargo
-      rustPlatform.cargoSetupHook
-    ]
-    ++ lib.optional (customLogo != null) imagemagick;
+  nativeBuildInputs = [
+    dtc
+  ]
+  ++ lib.optionals withChainloading [
+    rustPackages.rustc
+    rustPackages.cargo
+    rustPlatform.cargoSetupHook
+  ]
+  ++ lib.optional (customLogo != null) imagemagick;
 
   postPatch = ''
     substituteInPlace proxyclient/m1n1/asm.py \
@@ -89,38 +89,37 @@ stdenv.mkDerivation rec {
     popd &>/dev/null
   '';
 
-  installPhase =
-    ''
-      runHook preInstall
+  installPhase = ''
+    runHook preInstall
 
-      mkdir -p $out/build
-      cp build/m1n1.bin $out/build
-    ''
-    + (lib.optionalString withTools ''
-          mkdir -p $out/{bin,script,toolchain-bin}
-          cp -r proxyclient $out/script
-          cp -r tools $out/script
+    mkdir -p $out/build
+    cp build/m1n1.bin $out/build
+  ''
+  + (lib.optionalString withTools ''
+        mkdir -p $out/{bin,script,toolchain-bin}
+        cp -r proxyclient $out/script
+        cp -r tools $out/script
 
-          for toolpath in $out/script/proxyclient/tools/*.py; do
-            tool=$(basename $toolpath .py)
-            script=$out/bin/m1n1-$tool
-            cat > $script <<EOF
-      #!/bin/sh
-      ${pyenv}/bin/python $toolpath "\$@"
-      EOF
-            chmod +x $script
-          done
+        for toolpath in $out/script/proxyclient/tools/*.py; do
+          tool=$(basename $toolpath .py)
+          script=$out/bin/m1n1-$tool
+          cat > $script <<EOF
+    #!/bin/sh
+    ${pyenv}/bin/python $toolpath "\$@"
+    EOF
+          chmod +x $script
+        done
 
-          GCC=${buildPackages.gcc}
-          BINUTILS=${buildPackages.binutils-unwrapped}
+        GCC=${buildPackages.gcc}
+        BINUTILS=${buildPackages.binutils-unwrapped}
 
-          ln -s $GCC/bin/${stdenv.cc.targetPrefix}gcc $out/toolchain-bin/
-          ln -s $GCC/bin/${stdenv.cc.targetPrefix}ld $out/toolchain-bin/
-          ln -s $BINUTILS/bin/${stdenv.cc.targetPrefix}objcopy $out/toolchain-bin/
-          ln -s $BINUTILS/bin/${stdenv.cc.targetPrefix}objdump $out/toolchain-bin/
-          ln -s $GCC/bin/${stdenv.cc.targetPrefix}nm $out/toolchain-bin/
-    '')
-    + ''
-      runHook postInstall
-    '';
+        ln -s $GCC/bin/${stdenv.cc.targetPrefix}gcc $out/toolchain-bin/
+        ln -s $GCC/bin/${stdenv.cc.targetPrefix}ld $out/toolchain-bin/
+        ln -s $BINUTILS/bin/${stdenv.cc.targetPrefix}objcopy $out/toolchain-bin/
+        ln -s $BINUTILS/bin/${stdenv.cc.targetPrefix}objdump $out/toolchain-bin/
+        ln -s $GCC/bin/${stdenv.cc.targetPrefix}nm $out/toolchain-bin/
+  '')
+  + ''
+    runHook postInstall
+  '';
 }
