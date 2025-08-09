@@ -137,7 +137,8 @@ let
       };
 
       kernelPatches = [
-      ] ++ _kernelPatches;
+      ]
+      ++ _kernelPatches;
 
       inherit configfile;
       config = configAttrs;

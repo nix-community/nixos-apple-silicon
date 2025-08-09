@@ -50,11 +50,9 @@
       ./opencl.patch
     ];
 
-    postInstall =
-      (oldAttrs.postInstall or "")
-      + ''
-        # we don't build anything to go in this output but it needs to exist
-        touch $spirv2dxil
-        touch $cross_tools
-      '';
+    postInstall = (oldAttrs.postInstall or "") + ''
+      # we don't build anything to go in this output but it needs to exist
+      touch $spirv2dxil
+      touch $cross_tools
+    '';
   })
