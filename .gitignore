@@ -4,3 +4,4 @@
 /rootfs
 /installer
 bootbits/
+/.direnv/
