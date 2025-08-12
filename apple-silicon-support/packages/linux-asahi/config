@@ -8987,28 +8987,16 @@ CONFIG_TCG_CRB=m
 # https://github.com/NixOS/nixpkgs/blob/6295433b2b0079b063d78761ae52c4f385180cae/nixos/modules/installer/cd-dvd/iso-image.nix#L725
 CONFIG_SQUASHFS_CHOICE_DECOMP_BY_MOUNT=y
 
-# for better efficiency with sound
-CONFIG_UCLAMP_TASK=y
-CONFIG_UCLAMP_TASK_GROUP=y
-CONFIG_UCLAMP_BUCKETS_COUNT=5
-
-CONFIG_RUST_OVERFLOW_CHECKS=y
-CONFIG_RUST_PHYLIB_ABSTRACTIONS=y
-
-# "upstreamed" flags
-CONFIG_SPI_APPLE=m
-
 # Fedora Asahi Remix-specific options
 # generated with something like
-# git diff --name-only fedora-6.9 fedora-asahi-6.9 redhat/configs/ | grep -v x86 | grep -v s390x | xargs cat | sort >> config
-# in a checkout of https://gitlab.com/fedora-asahi/kernel-asahi/-/tree/fedora-asahi-6.9
+# git diff --name-only origin/fedora-6.14 origin/fedora-asahi-6.14 redhat/configs/ | grep -v x86 | grep -v s390x | xargs cat | sort >> config
+# in a checkout of https://gitlab.com/fedora-asahi/kernel-asahi/-/tree/fedora-asahi-6.14
 
 CONFIG_APPLE_AOP=m
+CONFIG_ACPI_DEBUG=y
 CONFIG_APPLE_DOCKCHANNEL=m
 CONFIG_APPLE_MAILBOX=y
-# CONFIG_APPLE_PLATFORMS is not set
 CONFIG_APPLE_PLATFORMS=y
-# CONFIG_APPLE_PMGR_MISC is not set
 CONFIG_APPLE_PMGR_MISC=y
 CONFIG_APPLE_RTKIT_HELPER=m
 CONFIG_APPLE_RTKIT=y
@@ -9017,16 +9005,15 @@ CONFIG_APPLE_SIO=m
 CONFIG_APPLE_SMC=m
 CONFIG_APPLE_SMC_RTKIT=m
 CONFIG_ARM64_MEMORY_MODEL_CONTROL=y
-# CONFIG_ARM_APPLE_CPUIDLE is not set
 CONFIG_ARM_APPLE_CPUIDLE=y
 CONFIG_CHARGER_MACSMC=m
+# CONFIG_CRYPTO_CHACHA20_P10 is not set
 CONFIG_DRM_ADP=m
 CONFIG_DRM_APPLE_AUDIO=y
 # CONFIG_DRM_APPLE_DEBUG is not set
 CONFIG_DRM_APPLE=m
 # CONFIG_DRM_ASAHI_DEBUG_ALLOCATOR is not set
 CONFIG_DRM_ASAHI=m
-# CONFIG_DRM_PANEL_SUMMIT is not set
 CONFIG_DRM_PANEL_SUMMIT=m
 CONFIG_GPIO_MACSMC=m
 CONFIG_HID_DOCKCHANNEL=m
@@ -9043,11 +9030,8 @@ CONFIG_SENSORS_MACSMC=m
 CONFIG_SND_SOC_APPLE_AOP_AUDIO=m
 CONFIG_SND_SOC_APPLE_MACAUDIO=m
 CONFIG_SND_SOC_CS42L84=m
-# CONFIG_SPI_HID_APPLE_OF is not set
 CONFIG_SPI_HID_APPLE_OF=m
 CONFIG_SPMI_APPLE=m
-# CONFIG_TOUCHSCREEN_APPLE_Z2 is not set
 CONFIG_TOUCHSCREEN_APPLE_Z2=m
-# CONFIG_USB_XHCI_PCI_ASMEDIA is not set
 CONFIG_USB_XHCI_PCI_ASMEDIA=y
 CONFIG_VIDEO_APPLE_ISP=m
