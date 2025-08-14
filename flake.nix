@@ -65,7 +65,6 @@
             m1n1
             uboot-asahi
             asahi-fwextract
-            mesa-asahi-edge
             ;
           inherit (pkgs) asahi-audio;
 

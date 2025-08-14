@@ -2,6 +2,24 @@
 
 This file contains important information for each release.
 
+## 2025-xx-yy
+
+This release drops our custom Mesa override.
+
+Since mesa 25.1, support for asahi is enabled by default.
+This means, the nixpkgs mesa is sufficient and we don't need any custom mesa,
+or methods to replace it.
+
+In addition to the now ineffective
+`hardware.asahi.useExperimentalGPUDriver` option, this also removes the
+`hardware.asahi.experimentalGPUInstallMode` option, which was already
+deprecated before.
+
+`hardware.asahi.withRust` now defaults to true, enabling rust support in the
+kernel. It already was set to true when setting
+`hardware.asahi.useExperimentalGPUDriver` to true, or just asking for the
+`linux-asahi` attribute.
+
 ## 2025-08-10
 
 This release updates nixpkgs.
