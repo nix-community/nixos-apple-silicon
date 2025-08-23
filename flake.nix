@@ -2,18 +2,14 @@
   description = "Apple Silicon support for NixOS";
 
   inputs = {
-    nixpkgs = {
-      url = "github:nixos/nixpkgs/nixos-unstable";
-    };
-
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-compat.url = "github:nix-community/flake-compat";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
     { self, ... }@inputs:
     let
+      inherit (self) outputs;
       # build platforms supported for uboot in nixpkgs
       systems = [
         "aarch64-linux"
@@ -21,32 +17,27 @@
       ]; # "i686-linux" omitted
 
       forAllSystems = inputs.nixpkgs.lib.genAttrs systems;
-
-      treefmtEval = forAllSystems (
-        system:
-        let
-          pkgs = inputs.nixpkgs.legacyPackages.${system};
-        in
-        inputs.treefmt-nix.lib.evalModule pkgs {
-          projectRootFile = "flake.nix";
-          programs.nixfmt.enable = true;
-        }
-      );
     in
     {
-      formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
+      formatter = forAllSystems (system: inputs.nixpkgs.legacyPackages.${system}.nixfmt-tree);
       checks = forAllSystems (system: {
-        formatting = treefmtEval.${system}.config.build.check self;
+        formatting = outputs.formatter.${system};
       });
 
-      overlays = rec {
+      devShells = forAllSystems (system: {
+        default = inputs.nixpkgs.legacyPackages.${system}.mkShellNoCC {
+          packages = [ outputs.formatter.${system} ];
+        };
+      });
+
+      overlays = {
         apple-silicon-overlay = import ./apple-silicon-support/packages/overlay.nix;
-        default = apple-silicon-overlay;
+        default = outputs.overlays.apple-silicon-overlay;
       };
 
-      nixosModules = rec {
+      nixosModules = {
         apple-silicon-support = ./apple-silicon-support;
-        default = apple-silicon-support;
+        default = outputs.nixosModules.apple-silicon-support;
       };
 
       packages = forAllSystems (
@@ -56,7 +47,7 @@
             crossSystem.system = "aarch64-linux";
             localSystem.system = system;
             overlays = [
-              self.overlays.default
+              outputs.overlays.default
             ];
           };
         in
@@ -80,7 +71,7 @@
                 pkgs = import inputs.nixpkgs {
                   crossSystem.system = "aarch64-linux";
                   localSystem.system = system;
-                  overlays = [ self.overlays.default ];
+                  overlays = [ outputs.overlays.default ];
                 };
 
                 specialArgs = {
