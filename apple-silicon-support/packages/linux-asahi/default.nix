@@ -3,7 +3,6 @@
   callPackage,
   writeText,
   linuxPackagesFor,
-  withRust ? true,
   _kernelPatches ? [ ],
 }:
 
@@ -75,22 +74,16 @@ let
       stdenv,
       lib,
       fetchFromGitHub,
-      fetchpatch,
       linuxKernel,
       rustc,
       rust-bindgen,
       ...
-    }@args:
+    }:
     let
       origConfigText = builtins.readFile origConfigfile;
 
       # extraConfig from all patches in order
-      extraConfig =
-        lib.fold (patch: ex: ex ++ (parsePatchConfig patch)) [ ] _kernelPatches
-        ++ (lib.optional withRust [
-          "CONFIG_RUST"
-          "y"
-        ]);
+      extraConfig = lib.fold (patch: ex: ex ++ (parsePatchConfig patch)) [ ] _kernelPatches;
       # config file text for above
       extraConfigText =
         let
@@ -116,10 +109,6 @@ let
           configList = (parseConfig origConfigText) ++ extraConfig;
         in
         builtins.listToAttrs (map makePair (lib.lists.reverseList configList));
-
-      # used to fix issues when nixpkgs gets ahead of the kernel
-      rustAtLeast = version: withRust && (lib.versionAtLeast rustc.version version);
-      bindgenAtLeast = version: withRust && (lib.versionAtLeast rust-bindgen.unwrapped.version version);
     in
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
