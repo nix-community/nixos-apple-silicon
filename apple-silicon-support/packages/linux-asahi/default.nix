@@ -18,16 +18,16 @@ let
     buildLinux rec {
       inherit stdenv lib;
 
-      version = "6.15.10-asahi";
+      version = "6.16.3-asahi";
       modDirVersion = version;
-      extraMeta.branch = "6.15";
+      extraMeta.branch = "6.16";
 
       src = fetchFromGitHub {
         # tracking: https://github.com/AsahiLinux/linux/tree/asahi-wip (w/ fedora verification)
         owner = "AsahiLinux";
         repo = "linux";
-        tag = "asahi-6.15.10-3";
-        hash = "sha256-au/v0bLzBaAMscfk47MZpyiG8pomw08qlT1RjVO9/x4=";
+        tag = "asahi-6.16.3-1";
+        hash = "sha256-77DAAOfYwCdzcLxEnsxorUuwoxoVFM32x+Fg22LBG04=";
       };
 
       kernelPatches = [
