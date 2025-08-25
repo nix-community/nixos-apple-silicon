@@ -17,15 +17,15 @@ let
     buildLinux rec {
       inherit stdenv lib;
 
-      version = "6.15.10-asahi";
+      version = "6.16.5-asahi";
       modDirVersion = version;
-      extraMeta.branch = "6.15";
+      extraMeta.branch = "6.16";
 
       src = fetchFromGitHub {
         owner = "AsahiLinux";
         repo = "linux";
-        tag = "asahi-6.15.10-3";
-        hash = "sha256-au/v0bLzBaAMscfk47MZpyiG8pomw08qlT1RjVO9/x4=";
+        tag = "asahi-6.16.5-2";
+        hash = "sha256-W30x9aoU5ltkda/flfhdGbMHVYCpNaneYvhbh7HiG+c=";
       };
 
       kernelPatches = [
