@@ -85,12 +85,7 @@ let
       origConfigText = builtins.readFile origConfigfile;
 
       # extraConfig from all patches in order
-      extraConfig =
-        lib.fold (patch: ex: ex ++ (parsePatchConfig patch)) [ ] _kernelPatches
-        ++ (lib.optional withRust [
-          "CONFIG_RUST"
-          "y"
-        ]);
+      extraConfig = lib.fold (patch: ex: ex ++ (parsePatchConfig patch)) [ ] _kernelPatches;
       # config file text for above
       extraConfigText =
         let
