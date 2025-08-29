@@ -44,6 +44,18 @@ let
 
             # Defaults to 'y', but we want to allow the user to set options in modprobe.d
             HID_APPLE = module;
+
+            # These are necessary, otherwise sound is very quiet.
+            # According to James Calligeros (chadmed) this is most likely a race condition.
+            SND_SOC_APPLE_MCA = module;
+            SND_SOC_APPLE_MACAUDIO = module;
+            SND_SOC_CS42L42_CORE = module;
+            SND_SOC_CS42L42 = module;
+            SND_SOC_CS42L83 = module;
+            SND_SOC_CS42L84 = module;
+            SND_SOC_TAS2764 = module;
+            SND_SOC_TAS2770 = module;
+            SND_SIMPLE_CARD_UTILS = module;
           };
           features.rust = true;
         }
