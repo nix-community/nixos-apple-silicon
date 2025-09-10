@@ -46,6 +46,7 @@
 
       nixosModules = rec {
         apple-silicon-support = ./apple-silicon-support;
+        apple-silicon-installer = ./iso-configuration;
         default = apple-silicon-support;
       };
 
