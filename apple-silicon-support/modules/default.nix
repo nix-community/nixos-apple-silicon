@@ -17,7 +17,7 @@
       cfg = config.hardware.asahi;
     in
     lib.mkIf cfg.enable {
-      nixpkgs.overlays = lib.mkBefore [ cfg.overlay ];
+      nixpkgs.overlays = lib.mkIf (cfg.overlay != null) (lib.mkBefore [ cfg.overlay ]);
 
       hardware.asahi.pkgs =
         if cfg.pkgsSystem != "aarch64-linux" then
@@ -59,12 +59,14 @@
     };
 
     overlay = lib.mkOption {
-      type = lib.mkOptionType {
-        name = "nixpkgs-overlay";
-        description = "nixpkgs overlay";
-        check = lib.isFunction;
-        merge = lib.mergeOneOption;
-      };
+      type = lib.types.nullOr (
+        lib.mkOptionType {
+          name = "nixpkgs-overlay";
+          description = "nixpkgs overlay";
+          check = lib.isFunction;
+          merge = lib.mergeOneOption;
+        }
+      );
       default = import ../packages/overlay.nix;
       defaultText = "overlay provided with the module";
       description = ''
