@@ -66,21 +66,21 @@
               installer-system = inputs.nixpkgs.lib.nixosSystem {
                 inherit system;
 
-                # make sure this matches the post-install
-                # `hardware.asahi.pkgsSystem`
-                pkgs = import inputs.nixpkgs {
-                  crossSystem.system = "aarch64-linux";
-                  localSystem.system = system;
-                  overlays = [ outputs.overlays.default ];
-                };
-
                 specialArgs = {
                   modulesPath = inputs.nixpkgs + "/nixos/modules";
                 };
 
                 modules = [
                   ./iso-configuration
-                  { hardware.asahi.pkgsSystem = system; }
+                  {
+                    hardware.asahi.pkgsSystem = system;
+
+                    # make sure this matches the post-install
+                    # `hardware.asahi.pkgsSystem`
+                    nixpkgs.hostPlatform.system = "aarch64-linux";
+                    nixpkgs.buildPlatform.system = system;
+                    nixpkgs.overlays = [ outputs.overlays.default ];
+                  }
                 ];
               };
 

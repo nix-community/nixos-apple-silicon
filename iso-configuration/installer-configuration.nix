@@ -109,7 +109,7 @@
     To set up a wireless connection, run `iwctl`.
   '';
 
-  nixpkgs.overlays = [
+  nixpkgs.overlays = lib.optionals (config.nixpkgs.hostPlatform.system != config.nixpkgs.buildPlatform.system) [
     (final: prev: {
       # disabling pcsclite avoids the need to cross-compile gobject
       # introspection stuff which works now but is slow and unnecessary
