@@ -63,11 +63,6 @@ let
       ++ _kernelPatches;
     };
 
-  linux-asahi = (callPackage linux-asahi-pkg { }).overrideAttrs (_: {
-    # FIXME: Remove when https://github.com/NixOS/nixpkgs/pull/436245 lands
-    preConfigure = ''
-      export RUST_LIB_SRC KRUSTFLAGS
-    '';
-  });
+  linux-asahi = callPackage linux-asahi-pkg { };
 in
 lib.recurseIntoAttrs (linuxPackagesFor linux-asahi)
