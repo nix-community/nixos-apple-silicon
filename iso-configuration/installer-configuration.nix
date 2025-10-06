@@ -15,6 +15,7 @@
 
 {
   imports = [
+    (modulesPath + "/profiles/base.nix")
     (modulesPath + "/profiles/minimal.nix")
     (modulesPath + "/profiles/installation-device.nix")
     (modulesPath + "/installer/cd-dvd/iso-image.nix")
