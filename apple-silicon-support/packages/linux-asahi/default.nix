@@ -17,15 +17,16 @@ let
     buildLinux rec {
       inherit stdenv lib;
 
-      version = "6.16.8-asahi";
+      pname = "linux-asahi";
+      version = "6.17.4";
       modDirVersion = version;
-      extraMeta.branch = "6.16";
+      extraMeta.branch = "6.17";
 
       src = fetchFromGitHub {
         owner = "AsahiLinux";
         repo = "linux";
-        tag = "asahi-6.16.8-1";
-        hash = "sha256-dGYPhmOa/ZSB7uJtAZ9ugz08Pqy6/YvhXrbLrwzxPXk=";
+        tag = "asahi-6.17.4-2";
+        hash = "sha256-gp3+B4toAC92OG4GHEvUZ8JFnRuqThymrjBgsY4Yauk=";
       };
 
       kernelPatches = [
@@ -36,6 +37,9 @@ let
             # Needed for GPU
             ARM64_16K_PAGES = yes;
 
+            ARM64_MEMORY_MODEL_CONTROL = yes;
+            ARM64_ACTLR_STATE = yes;
+
             # Might lead to the machine rebooting if not loaded soon enough
             APPLE_WATCHDOG = yes;
 
@@ -45,17 +49,8 @@ let
             # Defaults to 'y', but we want to allow the user to set options in modprobe.d
             HID_APPLE = module;
 
-            # These are necessary, otherwise sound is very quiet.
-            # According to James Calligeros (chadmed) this is most likely a race condition.
-            SND_SOC_APPLE_MCA = module;
-            SND_SOC_APPLE_MACAUDIO = module;
-            SND_SOC_CS42L42_CORE = module;
-            SND_SOC_CS42L42 = module;
-            SND_SOC_CS42L83 = module;
-            SND_SOC_CS42L84 = module;
-            SND_SOC_TAS2764 = module;
-            SND_SOC_TAS2770 = module;
-            SND_SIMPLE_CARD_UTILS = module;
+            APPLE_PMGR_MISC = yes;
+            APPLE_PMGR_PWRSTATE = yes;
           };
           features.rust = true;
         }
