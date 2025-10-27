@@ -58,6 +58,59 @@
 
           linux-asahi = pkgs.linux-asahi.kernel;
 
+          manual =
+            let
+              version = self.dirtyShortRev or self.shortRev;
+            in
+            pkgs.callPackage (
+              {
+                lib,
+                stdenvNoCC,
+                texinfo,
+                python3,
+              }:
+              stdenvNoCC.mkDerivation (finalAttrs: {
+                pname = "nixos-apple-silicon-manual";
+                inherit version;
+
+                src = ./.;
+
+                nativeBuildInputs = [
+                  texinfo
+                  python3.pkgs.pygments
+                ];
+
+                installPhase = ''
+                  runHook preInstall
+
+                  mkdir -p $out/share/doc/nixos-apple-silicon
+                  mkdir -p $out/share/doc/nixos-apple-silicon/html.d
+                  mkdir -p $out/share/info
+
+                  makeinfo docs/nixos-apple-silicon.texi \
+                    -o $out/share/info/nixos-apple-silicon.info
+                  makeinfo docs/nixos-apple-silicon.texi \
+                    --plaintext \
+                    -o $out/share/doc/nixos-apple-silicon/nixos-apple-silicon.txt
+                  makeinfo docs/nixos-apple-silicon.texi \
+                    --html --no-split -c HIGHLIGHT_SYNTAX=pygments \
+                    -o $out/share/doc/nixos-apple-silicon/nixos-apple-silicon.html
+                  makeinfo docs/nixos-apple-silicon.texi \
+                    --html -c HIGHLIGHT_SYNTAX=pygments \
+                    -o $out/share/doc/nixos-apple-silicon/html.d/
+
+                  runHook postInstall
+                '';
+
+                meta = {
+                  description = "Manual for installing and maintaining NixOS on Apple Silicon";
+                  homepage = "https://github.com/nix-community/nixos-apple-silicon";
+                  license = lib.licenses.mit;
+                  platforms = lib.platforms.unix;
+                };
+              })
+            ) { };
+
           installer-bootstrap =
             let
               installer-system = inputs.nixpkgs.lib.nixosSystem {
