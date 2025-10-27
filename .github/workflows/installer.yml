@@ -59,7 +59,7 @@ jobs:
           nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap -j2 -L
           cp result/iso/*.iso $(basename result/iso/*.iso | sed s/aarch64-linux/apple-silicon-${{ github.ref_name }}/)
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: installer
           path: ./*.iso
