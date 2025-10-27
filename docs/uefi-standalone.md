@@ -262,6 +262,15 @@ networking.wireless.iwd = {
 };
 ```
 
+If you have a MacBook model that has a [touchbar](https://support.apple.com/guide/mac-help/use-the-touch-bar-mchlbfd5b039/mac), you will also have to add this to your configuration to ensure that graphical sessions render on the main display and not within the touchbar itself:
+
+```nix
+hardware.apple.touchBar = {
+  enable = true;
+  package = pkgs.tiny-dfr;
+};
+```
+
 #### NixOS Installation
 
 Once you are happy with your initial configuration, you may install the system. This will have to download a large amount of data.
