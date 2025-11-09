@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - uses: actions/checkout@v5
@@ -20,44 +20,40 @@ jobs:
           extra_nix_config: |
             # save space on disk and in cache
             auto-optimise-store = true
-            # keep all store paths necessary to build the outputs
-            keep-outputs = true
-            keep-derivations = true
 
-      - name: cache nix store
-        id: cache-nix-store
-        uses: actions/cache@v4
-        with:
-          key: installer5-${{ github.sha }}
-          restore-keys: |
-            installer5
-          path: |
-            nix_store_dir
-            nix_store_db.sqlite
-
-      - name: restore cached nix store
+      - name: prepare kernel build
         run: |
-          if [ -e nix_store_db.sqlite ]; then
-            sudo systemctl stop nix-daemon
+          # download everything necessary for the kernel without building. this
+          # will fail since -j0 will keep any jobs from running so we force it
+          # to succeed. if it did fail a later step should retry/catch it.
+          nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap.config.system.build.kernel -j0 -L || true
 
-            # put cached store paths back in their proper locations
-            sudo rm -rf /nix/store /nix/var/nix/db/db.sqlite
-            sudo mv nix_store_dir /nix/store
-            sudo cp nix_store_db.sqlite /nix/var/nix/db/db.sqlite
+          # download the kernel source (not in cache so it's a build and wasn't done above)
+          nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap.config.system.build.kernel.src -j1 -L -o kernel-src
 
-            # fix store permissions
-            sudo chmod 1775 /nix/store
-            sudo chown root:nixbld /nix/store
-            sudo chmod 0644 /nix/var/nix/db/db.sqlite
-            sudo chown -R root:root /nix/store /nix/var/nix/db/db.sqlite
+          # build the kernel config file here especially as it's spammy
+          nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap.config.system.build.kernel.configfile -j1 -L
 
-            sudo systemctl start nix-daemon
-          fi
+      - name: build kernel
+        run: |
+          # actually build the kernel, takes ~2h and a lot of disk space
+          nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap.config.system.build.kernel -j1 -L -o kernel
+
+      - name: clean up kernel build
+        run: |
+          # delete kernel source, saves 1-2GB
+          KERNEL_SRC=$(readlink -f kernel-src)
+          rm kernel-src
+          nix-store --delete $KERNEL_SRC
 
       - name: build installer
         run: |
+          # rest of the installer is downloaded and agglomerated and a few minor things are built
           nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap -j2 -L
-          cp result/iso/*.iso $(basename result/iso/*.iso | sed s/aarch64-linux/apple-silicon-${{ github.ref_name }}/)
+
+          INSTALLER_DEST=$(basename result/iso/*.iso | sed 's:aarch64-linux:apple-silicon-${{ github.ref_name }}:' | tr '/' '-')
+          echo installer dest: "$INSTALLER_DEST"
+          cp result/iso/*.iso "$INSTALLER_DEST"
 
       - uses: actions/upload-artifact@v5
         with:
@@ -68,14 +64,3 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ./*.iso
-      
-      - name: prepare nix store for caching
-        run: |
-          # delete old stuff not relevant to this build
-          nix-collect-garbage
-          sudo systemctl stop nix-daemon
-
-          # move store to a place where the cache action can read it
-          sudo mv /nix/store nix_store_dir
-          sudo mv /nix/var/nix/db/db.sqlite nix_store_db.sqlite
-
