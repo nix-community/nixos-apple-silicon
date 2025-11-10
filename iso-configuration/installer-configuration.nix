@@ -76,6 +76,7 @@
     curl
     wget
     wormhole-william
+    nas-manual
   ];
 
   # save space and compilation time. might revise?

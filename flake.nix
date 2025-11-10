@@ -19,7 +19,19 @@
       forAllSystems = inputs.nixpkgs.lib.genAttrs systems;
     in
     {
-      formatter = forAllSystems (system: inputs.nixpkgs.legacyPackages.${system}.nixfmt-tree);
+      formatter = forAllSystems (
+        system:
+        inputs.nixpkgs.legacyPackages.${system}.nixfmt-tree.override {
+          runtimeInputs = [ inputs.nixpkgs.legacyPackages.${system}.prettier ];
+
+          settings.formatter."prettier" = {
+            command = "prettier";
+            options = [ "--write" ];
+            includes = [ "*.css" ];
+          };
+        }
+      );
+
       checks = forAllSystems (system: {
         formatting = outputs.formatter.${system};
       });
@@ -40,6 +52,33 @@
         default = outputs.nixosModules.apple-silicon-support;
       };
 
+      apps =
+        inputs.nixpkgs.lib.genAttrs
+          (
+            systems
+            ++ [
+              "x86_64-darwin"
+              "aarch64-darwin"
+            ]
+          )
+          (system: {
+            nas-manual =
+              let
+                drv =
+                  inputs.nixpkgs.legacyPackages.${system}.callPackage apple-silicon-support/packages/nas-manual
+                    {
+                      version = self.dirtyShortRev or self.shortRev;
+                    };
+              in
+              {
+                type = "app";
+                program = "${drv}/bin/" + drv.meta.mainProgram;
+                meta.description = "View the NixOS Apple Silicon manual.";
+              };
+
+            default = outputs.apps.${system}.nas-manual;
+          });
+
       packages = forAllSystems (
         system:
         let
@@ -57,6 +96,10 @@
             ;
 
           linux-asahi = pkgs.linux-asahi.kernel;
+
+          nas-manual = pkgs.nas-manual.override { version = self.dirtyShortRev or self.shortRev; };
+
+          default = outputs.packages.${system}.nas-manual;
 
           installer-bootstrap =
             let

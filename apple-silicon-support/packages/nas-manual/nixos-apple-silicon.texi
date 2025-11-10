@@ -1,0 +1,1033 @@
+\input texinfo
+@setfilename nixos-apple-silicon-manual
+@settitle NixOS Apple Silicon
+@set VERSION 2025-08-23
+@set MAINTAINERS @@tpwrules, @@flokli, @@yuyuyureka
+@set BUG_TRACKER @url{https://github.com/nix-community/nixos-apple-silicon/issues, Bug Tracker}
+@set RELEASES_MIRROR @url{https://github.com/nix-community/nixos-apple-silicon/releases, GitHub Releases}
+@set LINUX_VERSION asahi-6.14.8-1
+@set M1N1_VERSION v1.4.21
+@set UBOOT_VERSION asahi-v2025.04-1
+@set NIXPKGS_DATE 2025-08-19
+
+@copying
+Copyright @copyright{} 2021-2025 Thomas Watson@*
+Copyright @copyright{} 2023 Alexandra Reaves@*
+Copyright @copyright{} 2023 Patrick Stevens@*
+Copyright @copyright{} 2023 uuuvn@*
+Copyright @copyright{} 2023 Isabella Skořepová@*
+Copyright @copyright{} 2024 Fabian Page@*
+Copyright @copyright{} 2024-2025 Florian Klink@*
+Copyright @copyright{} 2025 Yureka@*
+Copyright @copyright{} 2025 Jasi@*
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+@end copying
+
+@titlepage
+@title NixOS Apple Silicon Manual
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+@paragraphindent 0
+
+@contents
+
+@node Top
+@top NixOS Apple Silicon
+
+This manual explains how to install and maintain a NixOS system on
+Apple Silicon hardware.
+
+The version of the manual you are reading is @value{VERSION}.
+
+@menu
+* Installation::            Installing NixOS Apple Silicon
+* Upgrading::               Upgrading the NixOS support module
+* Rescue::                  Rescue the system from a un-workable state
+* Un-installation::         Un-install nixos-apple-silicon
+* Binary cache::            Additional cache to support builds
+* Release model/process::   How new releases are made
+* Release Notes::           Release changelogs
+* Copying::                 Copying and distributing this manual
+@end menu
+
+@node Installation
+@chapter Installation
+
+This guide will explain how to install NixOS on the internal NVMe
+drive of an Apple Silicon Mac using a customized version of the
+official NixOS install ISO, then boot it without the help of another
+computer. Aside from the Apple Silicon support module and AArch64 CPU,
+the resulting installation can be configured and operated like any
+other NixOS system. Your macOS install will still work normally, and
+you can easily switch between booting both macOS and NixOS.
+
+@node Requirements
+
+@nodedescriptionblock
+Required software for installation
+@end nodedescriptionblock
+
+@section Requirements
+
+This guide was tested with the following software releases:
+
+@multitable @columnfractions .60 .40
+
+@headitem Project @tab Release
+
+@item @url{https://github.com/nix-community/nixos-apple-silicon, nixos-apple-silicon}
+@tab @value{VERSION}
+
+@item @url{https://github.com/AsahiLinux/linux, linux}
+@tab @value{LINUX_VERSION}
+
+@item @url{https://github.com/AsahiLinux/m1n1, m1n1}
+@tab @value{M1N1_VERSION}
+
+@item @url{https://github.com/AsahiLinux/u-boot, u-boot}
+@tab @value{UBOOT_VERSION}
+
+@item @url{https://github.com/NixOS/nixpkgs, nixpkgs}
+@tab As of @value{NIXPKGS_DATE}
+
+@item MacOS @tab >13.5
+
+@end multitable
+
+The following items are required to get started:
+
+@itemize
+
+@item
+Apple Silicon Mac
+@url{https://github.com/AsahiLinux/docs/wiki/Feature-Support#table-of-contents,
+supported by Asahi Linux} with macOS 13.5 or later and an admin
+account
+@item
+For Mac mini users: tested and working HDMI monitor. Many do not work
+properly; if it shows the Asahi Linux logo and console when m1n1 is
+running, it's fine.
+@item
+USB flash drive which is at least 512MB and can be fully erased
+@item
+Familiarity with the command line and installers without GUIs
+@item
+Optional: an x86_64 or aarch64 Linux PC or VM (any distro is fine)
+@end itemize
+
+@node Considerations
+
+@nodedescriptionblock
+Some considerations to have in mind when choosing to install
+@end nodedescriptionblock
+
+@section Considerations
+
+Damage to the macOS recovery partitions or the partition table could
+result in the Mac becoming unbootable and loss of all data on the
+internal NVMe drive. In this circumstance, a suitable USB cable and
+another computer which can run
+@url{https://github.com/libimobiledevice/idevicerestore,idevicerestore}
+will be required to perform a DFU upgrade and restore normal
+operation. Backups are always wise.
+
+While you will end up with a reasonably usable computer, the exact
+hardware features you want may not be ready yet (see
+@url{https://github.com/AsahiLinux/docs/wiki/%22When-will-Asahi-Linux-be-done%3F%22,
+``When will Asahi Linux be done?''})
+
+Please also see
+@url{https://github.com/AsahiLinux/docs/wiki/Feature-Support, Asahi
+Linux Feature Support} information. Any features marked with a kernel
+version or `linux-asahi` should be supported by NixOS too.
+
+@node Obtaining the ISO
+
+@nodedescriptionblock
+How to either build or obtain an installation ISO to install NixOS
+@end nodedescriptionblock
+
+@section Obtaining the ISO
+
+There are multiple ways to obtain an installation ISO, either from
+downloading a pre-built version or building one yourself from source
+using Nix. This guide goes over both ways.
+
+@subsection Downloading the ISO directly
+
+You can download a pre-built installation ISO from the NixOS Apple
+Silicon project using @value{RELEASES_MIRROR} which includes the
+corresponding SHA256 hash for verification.
+
+The caveat is that customization of the installation ISO is not
+possible so if you need a tool not covered by the
+@code{iso-configuration} directory or need an ISO built from the
+development branch, then building the ISO is preferable.
+
+@subsection Building the ISO directly
+
+If you have flakes enabled in your Nix installation: you can easily
+build an installation ISO through this one liner:
+
+@example
+nix build github:nix-community/nixos-apple-silicon/release-2025-08-23#installer-bootstrap \
+          -o installer
+@end example
+
+The resulting installation ISO will be located in
+@file{installer/iso/nixos-<version-info>-aarch64-linux.iso} and can be
+burned onto an USB drive.
+
+@subsection From source
+
+Building from source currently requires flakes to be used. A
+@code{git} installation is also required for cloning.
+
+First clone the repository onto your local system and checkout the
+appropriate release (you may also choose to build directly from the
+@emph{main} branch which may include things not covered by this
+guide).
+
+@example
+git clone https://github.com/nix-community/nixos-apple-silicon
+cd nixos-apple-silicon
+git checkout release-@value{VERSION}
+@end example
+
+The configuration for the ISO is located in
+@file{iso-configuration/installer-configuration.nix} and can be edited
+to include additional tools and settings not already included.
+
+To build the ISO with build logs:
+@example
+nix build .#installer-bootstrap -o installer -L
+@end example
+
+The resulting installation ISO will be located in
+@file{installer/iso/nixos-<version-info>-aarch64-linux.iso} and can be
+burned onto an USB drive.
+
+If you run into any errors during building, you can report it to the
+@value{BUG_TRACKER}, please include the build logs as well which can be
+retrieved with @code{nix log .#<pkg-name>}
+
+@node UEFI Preparation
+@nodedescriptionblock
+Prepare MacOS for installation of a new operating system
+@end nodedescriptionblock
+
+@section UEFI Preparation
+
+This setup uses the Asahi Linux installer to install a stub macOS and
+standard UEFI boot environment from which the NixOS installer and
+installed OS will run. These steps must be run from @code{Terminal.app} in
+macOS. You must also be logged into an administrator account.
+
+Download and run the installer using the following command which is
+also available on the @url{https://asahilinux.org, Asahi project homepage}).
+
+@example
+curl https://alx.sh | sh
+@end example
+
+Choose the following options to get started:
+
+@itemize @bullet{}
+@item
+Enter your administrator password.
+@item
+Do @strong{not} enable expert mode.
+@item
+Resize your existing MacOS installation:
+@itemize @minus{}
+@item
+Resize an existing partition to make space for a new OS (press @code{r}).
+@item
+Enter the new size of the macOS install. It should be at least 20GB
+less than its current size to make room for NixOS with a GUI (note
+that here 1GB = 1,000,000,000 bytes).
+@item Confirm the resize operation
+@item
+Wait patiently while the partition is resized; it will take several
+minutes. Do not attempt to use the machine while this is in progress.
+@end itemize
+Press @code{enter} when finished.
+
+@item
+Install UEFI environment:
+@itemize @minus{}
+@item
+Install an OS into free space (press @code{f}).
+@item
+Choose ``UEFI environment only''.
+@item
+Name it NixOS (this is what shows up in the firmware boot picker).
+@item
+Wait while the installation proceeds and enter your password when prompted.
+@item
+Wait for the default boot volume to be set (this may take several seconds).
+@item
+Read the final advice, then press @code{enter} to shut down the machine.
+@end itemize
+@end itemize
+
+Boot into recovery mode by holding the power button down as directed
+and select the new NixOS option in the boot picker. Follow the prompts
+and enter your administrator password. The local policy update will
+take several seconds to complete. Once complete, select that you want
+to set a custom boot object and put your system to permissive security
+mode, enter your administrator username (the same one you put in the
+password for earlier) and password, then reboot when prompted.
+
+If everything went well, you will restart into U-Boot with the Asahi
+Linux and U-Boot logos on-screen. Shut the system down by holding the
+power button, then proceed to the next step.
+
+
+@node Boot into the installation
+@nodedescriptionblock
+Describes how to boot into the installation ISO
+@end nodedescriptionblock
+@section Boot into the installation
+
+Shut down the machine fully. Connect the flash drive with the
+installer ISO to a USB port (most likely using a USB-C adapter if
+required).
+
+Start the Mac, and U-Boot should start booting from the USB drive
+automatically. If you've already installed something to the internal
+NVMe drive, U-Boot will try to boot it first. To instead boot from
+USB, hit a key to stop autoboot when prompted, then run the command
+`bootmenu` and select the `usb 0` entry. If no entries are available,
+exit and use `bootmenu -e` instead. If this command is not available,
+instead use `env set boot_efi_bootmgr ; run bootcmd_usb0`. GRUB will
+start, then the NixOS installer after a short delay (the default GRUB
+option is fine).
+
+@subsection Troubleshooting
+
+If you encounter @code{"mounting `/dev/root` on `/mnt-root/iso` failed: No such file or directory" during boot…}
+
+@enumerate
+@item
+Was the ISO transferred to your flash drive correctly as described
+above? `dd` is the only correct way to do this. The ISO must be
+transferred to the drive block device itself, not a partition on the
+drive.
+@item
+There is sometimes a
+@url{https://github.com/nix-community/nixos-apple-silicon/issues/60,
+race condition} which causes booting to fail. Reboot the machine and
+try again.
+@item
+Some flash drives have quirks. Try a different drive, or use the following steps:
+@enumerate
+      @item Attempt to start the installer normally
+      @item When the boot fails and you are prompted, hit i to start a shell
+      @item Unplug your flash drive, plug it into a different port, then wait 30 seconds
+      @item Run the command `mount -t iso9660 /dev/root /mnt-root/iso`
+      @item Exit the shell by running `exit` to continue the boot process
+@end enumerate
+@end enumerate
+
+You will get a console prompt once booting completes. Run the command
+@code{sudo su} to get a root prompt in the installer. If the console font
+is too small, run the command @code{setfont ter-v32n} to increase the size.
+
+@subsection Network setup
+
+If you're not using WiFi, connect the Ethernet cable to the network
+port or adapter as well. If you are using WiFi, use @code{iwd} to
+connect to it.
+
+@example
+nixos# iwctl
+NetworkConfigurationEnabled: enabled
+StateDirectory: /var/lib/iwd
+Version: 2.4
+[iwd]# station wlan0 scan
+[iwd]# station wlan0 connect <SSID>
+Type the network passphrase for <SSID> psk.
+Passphrase: <your passphrase>
+[iwd]# station wlan0 show
+[...]
+[iwd] exit
+@end example
+
+Once the network is set up, ensure the time is set correctly:
+
+@example
+systemctl restart systemd-timesyncd
+@end example
+
+
+@node Partitioning guide
+@nodedescriptionblock
+How to manually partition your disk without soft-bricking your device
+@end nodedescriptionblock
+
+@section Partitioning guide
+
+@quotation Warning
+Damage to the GPT partition table, first partition
+(@code{iBootSystemContainer}), or the last partition
+(@code{RecoveryOSContainer}) could result in the loss of all data and
+render the Mac unbootable and unrecoverable without assistance from
+another computer! Do not use your distro's automated partitioner or
+partitioning instructions!
+
+In short, don't use any automated partitioning tools (such as disko or
+calamares) as it's very likely it will damage these partitions and
+soft-brick your system, requiring you to go through a system rescue
+(@xref{Rescue from boot failure with @code{idevicerestore}}).
+
+@end quotation
+
+@node Partition setup with @code{ext4}
+@nodedescriptionblock
+Partitioning walkthrough with a simple unencrypted @code{ext4}
+@end nodedescriptionblock
+@subsection Partition setup with @code{ext4}
+We will add a root partition to the remaining free space and format it as ext4.
+
+Create the root partition to fill up the free space:
+
+@example
+nixos# sgdisk /dev/nvme0n1 -n 0:0 -s
+[...]
+The operation has completed successfully.
+@end example
+
+Identify the number of the new root partition (type code 8300,
+typically second to last):
+
+@example
+$ sgdisk /dev/nvme0n1 -p
+Disk /dev/nvme0n1: 244276265 sectors, 931.8 GiB
+Model: APPLE SSD AP1024Q
+Sector size (logical/physical): 4096/4096 bytes
+Disk identifier (GUID): 27054D2E-307A-41AA-9A8C-3864D56FAF6B
+Partition table holds up to 128 entries
+Main partition table begins at sector 2 and ends at sector 5
+First usable sector is 6, last usable sector is 244276259
+Partitions will be aligned on 1-sector boundaries
+Total free space is 0 sectors (0 bytes)
+
+Number  Start (sector)    End (sector)  Size       Code  Name
+   1               6          128005   500.0 MiB   FFFF  iBootSystemContainer
+   2          128006       219854567   838.2 GiB   AF0A  Container
+   3       219854568       220465127   2.3 GiB     AF0A
+   4       220465128       220590311   489.0 MiB   EF00
+   5       220590312       242965550   85.4 GiB    8300
+   6       242965551       244276259   5.0 GiB     FFFF  RecoveryOSContainer
+@end example
+
+Format the new root partition:
+
+@example
+mkfs.ext4 -L nixos /dev/nvme0n1p5
+@end example
+
+Mount the root partition, then the EFI system partition that was
+created by the Asahi Linux installer specifically for NixOS:
+
+@example
+nixos# mount /dev/disk/by-label/nixos /mnt
+nixos# mkdir -p /mnt/boot
+nixos# mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /mnt/boot
+@end example
+
+@node Installing NixOS
+@nodedescriptionblock
+Installing NixOS from the booted system
+@end nodedescriptionblock
+@section Installing NixOS
+
+Create a default configuration for the new system, then copy the Apple
+Silicon support module into it:
+
+@example
+nixos# nixos-generate-config --root /mnt
+nixos# cp -r /etc/nixos/apple-silicon-support /mnt/etc/nixos/
+nixos# chmod -R +w /mnt/etc/nixos/
+@end example
+
+Now edit the newly generated configuration at
+@file{/mnt/etc/nixos/configuration.nix} to import the
+@file{./apple-silicon-support} directory. The beginning portion of the
+file should look like this:
+
+@example nix
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+      # Include the necessary packages and configuration for Apple Silicon support.
+      ./apple-silicon-support
+    ];
+
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = false;
+@end example
+
+@subsection Peripheral firmware
+
+Various non-free non-redistributable peripheral firmware files are
+required to use system hardware like Wi-Fi. The Asahi Linux installer
+grabs these from macOS and stores them on the EFI system partition
+when it is created. The NixOS installer loads them from there while
+booting so that all hardware is available during installation. By
+default, the Apple Silicon support module will automatically reference
+the files in the EFI system partition and incorporate them into your
+configuration to be managed by the normal NixOS mechanisms.
+
+Currently, the only supported way to update the peripheral firmware
+files is to destroy and re-create the EFI system partition, so they
+will not change unexpectedly.
+
+If you do not want the impurity of referencing them (or are using
+flakes where this is prohibited), copy them off the EFI system
+partition (e.g. on the installation ISO).
+
+@example
+mkdir -p /mnt/etc/nixos/firmware
+cp /mnt/boot/asahi/@{all_firmware.tar.gz,kernelcache*@} /mnt/etc/nixos/firmware
+@end example
+
+Then specify this path in your configuration in
+@file{/mnt/etc/nixos/configuration.nix}:
+
+@example nix
+hardware.asahi.peripheralFirmwareDirectory = ./firmware;
+@end example
+
+You may also disable extraction and management entirely:
+
+@example nix
+hardware.asahi.extractPeripheralFirmware = false;
+@end example
+
+@subsection Keyboard layouts
+Some keyboard layouts are not detected correctly. On some devices, the
+@code{\} key is swapped with @code{`<`}, and @code{`~`} with
+@code{`>`}. The layout can be fixed by setting options in
+@code{boot.extraModprobeConfig}. Which option needs to be set depends
+on your hardware keyboard's layout (see:
+@url{https://wiki.archlinux.org/title/Apple_Keyboard, Arch Wiki -
+Apple Keyboard})
+
+@example nix
+ # For ` to < and ~ to > (for those with US keyboards)
+ boot.extraModprobeConfig = ''
+   options hid_apple iso_layout=0
+ '';
+@end example
+
+@subsection Wireless networking
+
+Use @code{iwd} in the configuration instead of @code{wpa_supplicant}
+for Broadcom hardware support in Apple Silicon devices.
+
+@example nix
+networking.wireless.iwd = @{
+  enable = true;
+  settings.General.EnableNetworkConfiguration = true;
+@};
+
+# When using NetworkManager
+networking.networkmanager.wifi.backend = "iwd";
+@end example
+
+@subsection Installing
+Once you're satisfied with all your changes, you may install the NixOS configuration by running:
+
+@example
+nixos# nixos-install
+[...]
+setting root password...
+New password: ***
+Retype new password: ***
+passwd: password updated successfully
+installation finished!
+@end example
+
+Once completed, you can optionally @code{chroot} into the system using
+@code{nixos-enter} to set a user password if you hadn't set one in
+your configuration. If anything went wrong during the installation or
+you wish to re-install a modified configuration, you can run
+@code{nixos-install} again and restart the system when ready.
+
+The machine is now set up to boot NixOS by default when turned on. To
+access the boot picker, turn off the machine, then hold the power
+button to turn the machine on instead of just pressing it. Let go once
+the options come up. To boot a particular OS once, click on it, then
+click Continue underneath it. To switch the default OS, click on the
+desired default, hold Option (@code{Alt}), then click ``Always Use'' underneath
+it.
+
+@node Upgrading
+@chapter Upgrading
+
+To update the Apple Silicon support module, including the Asahi
+kernel, U-Boot, and m1n1, you can simply download newer files from
+this repo under apple-silicon-support and place them under
+/etc/nixos/apple-silicon-support. Any changes will require a
+configuration rebuild and reboot to take effect. If you wish to
+customize your kernel, you can edit the kernel config in
+/etc/nixos/apple-silicon-support/kernel/config. Consult the comments
+in /etc/nixos/apple-silicon-support/kernel/default.nix and
+/etc/nixos/apple-silicon-support/kernel/package.nix for more details.
+Note that if the kernel device trees change, U-Boot will need to be
+updated too.
+
+U-Boot and m1n1 are automatically managed by NixOS' bootloader system.
+If you roll back to a previous generation and things do not work
+properly due to a device tree incompatibility, you can run
+/run/current-system/bin/switch-to-configuration switch then reboot to
+force the bootloader and the correct version of U-Boot/m1n1 to be
+reinstalled and loaded.
+
+
+@node Upgrading using channels
+@section Upgrading using channels
+
+If you want the Apple Silicon support module to be upgraded in tandem
+with NixOS instead of manually downloading new files, you can add it
+as a channel with the following command as root:
+
+@example
+nix-channel --add https://github.com/nix-community/nixos-apple-silicon/archive/main.tar.gz apple-silicon-support
+@end example
+
+Modify your @file{/etc/nixos/configuration.nix} to reference the
+channel instead of the local files:
+
+@example nix
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+      # Include the necessary packages and configuration for Apple Silicon support.
+      <apple-silicon-support/apple-silicon-support>
+    ];
+@end example
+
+You can now update and reboot into your new NixOS after updating your
+channels and switching to the new configuration. Note that this will
+track the latest development branch, so breaking changes may occur
+between channel updates.
+
+@node Rescue
+@chapter Rescue
+
+@node Rescue the system using the installer
+@nodedescriptionblock
+Re-using the installer to repair a non-functioning NixOS system
+@end nodedescriptionblock
+@section Re-installing the system using the installer
+
+If something goes wrong and NixOS doesn't boot or is otherwise
+unusable, you can first try rolling back to a previous generation.
+Instead of selecting the default bootloader option, choose another
+configuration that worked previously.
+
+If something is seriously wrong and the bootloader does not work (or
+you don't have any other generations), you will want to get back into
+the installer. To start the installer with a system installed on the
+internal disk, shut down the computer, re-insert the USB drive with
+the installer, start it up again, hit a key in U-Boot when prompted to
+stop autoboot, then run the command bootmenu and select the @code{usb 0}
+entry. If no entries are available, exit and use @code{bootmenu -e} instead.
+If this command is not available, instead use @code{env set boot_efi_bootmgr
+; run bootcmd_usb0}.
+
+Once in the installer, you can re-mount your root partition and EFI
+system partition without reformatting them. Depending on what exactly
+went wrong, you might need to edit your configuration, copy over the
+latest Apple Silicon support module, or update U-Boot using the latest
+installer.
+
+Rerunning the installer will create a new generation but not touch any
+user data. This means you can "undo" the installation by selecting a
+previous generation in the bootloader. To redo the installation
+without changing your root password or changing the version of
+Nixpkgs, run:
+
+@example
+nixos-install --no-root-password --no-channel-copy
+@end example
+
+In extreme circumstances, you can delete the EFI system partition and
+stub macOS install and rerun the Asahi Linux installer, then follow
+the steps above to reinstall NixOS's bootloader menu. You will need to
+regenerate the hardware configuration using @code{nixos-generate-config
+--root /mnt} because the EFI system partition's ID will change. This
+shouldn't modify your root partition or other NixOS configuration, but
+of course it's always smart to have a backup. You might also wish to
+re-copy the peripheral firmware files.
+
+@node Rescue from boot failure with @code{idevicerestore}
+@nodedescriptionblock
+Using @code{idevicerestore} to fix boot failure.
+@end nodedescriptionblock
+@section Rescue from boot failure with @code{idevicerestore}
+
+In extremely extreme circumstances (i.e. something messed up the
+firmware partition, recovery partition, or partition table), your Mac
+may fail to boot. On the Mac mini (and presumably Mac Studio), this
+state is identifiable by a flashing orange power light indicating the
+Morse code for SOS. On a Mac laptop, this state is identifiable by an
+illustration of an exclamation point in a circle on the screen with a
+link to Apple's website.
+
+To make the Mac bootable again, you can use
+@url{https://github.com/libimobiledevice/idevicerestore,
+idevicerestore} from another Mac or Linux x86_64 or aarch64 VM or
+computer that has an Internet connection. You will need a USB cable
+with at least one USB-C end. This procedure has been tested with Mac
+and Linux hosts restoring a Mac mini with macOS 12.4.
+
+Please note that this procedure may require you to unrecoverably
+destroy all data on the Mac's internal drive. If erasing is necessary,
+you will be clearly warned and asked to confirm before it happens. The
+drive will end up zeroed and its encryption keys (probably)
+regenerated, so not even the NSA will be able to save you. If you
+haven't made backups, make peace with yourself now.
+
+To start the procedure, hook up the appropriate port on your
+unbootable Mac to the second computer and invoke DFU mode. This
+process is covered by Steps 1 and 2 of
+@url{https://support.apple.com/guide/apple-configurator-mac/revive-or-restore-a-mac-with-apple-silicon-apdd5f3c75ad/mac,
+Apple's documentation}. We will first try what Apple calls a "revive"
+where the disk is not erased, although both we and
+@code{idevicerestore} still call it a ``restore''.
+
+If DFU mode was started correctly, the unbootable Mac will show up on
+your second computer as an @code{Apple, Inc. Mobile Device (DFU Mode)}
+in @code{lsusb} on Linux or System Information on macOS. If you see
+@code{Apple, Inc. Apple Mobile Device [Recovery Mode]} instead (or
+nothing), the procedure was not followed correctly and you need to try
+again.
+
+Open a terminal on your second computer. You need @code{usbmuxd} (only
+if on Linux) and @code{idevicerestore}. nixpkgs (both unstable and
+stable) provide sufficiently updated package versions. If you're on
+NixOS, set @code{services.usbmuxd.enable = true;} to get udev rules,
+system services etc. configured. If you're on another Linux, you need
+to run @code{usbmuxd} as root in the background, without any arguments (or
+manually set up udev rules and system services).
+
+Then, ask @code{idevicerestore} to restore the firmware by using the
+@code{--latest} flag. If you wish to erase the disk either because the
+revive didn't work or because you want to start with a clean slate,
+use the @code{--erase} flag also.
+
+@example
+sudo idevicerestore --latest
+idevicerestore 1.0.0-unstable-2022-05-22
+Found device in DFU mode
+Identified device as j274ap, Macmini9,1
+The following firmwares are currently being signed for Macmini9,1:
+[...]
+Select the firmware you want to restore:
+@end example
+
+Once @code{idevicerestore} detects the unbootable Mac, select the desired
+firmware (usually number `1`) and wait patiently while the firmware is
+downloaded; it's about 13GiB. If @code{idevicerestore} doesn't detect the
+unbootable Mac, make sure that your cables are hooked up correctly,
+that you used @code{sudo}, and that you are using a suitably recent
+version.
+
+The restore process will automatically start once the firmware is
+downloaded and verified. If @code{idevicerestore} fails with the message
+@code{ERROR: Device did not disconnect. Possibly invalid iBEC. Reset device
+and try again.}, the unbootable Mac is likely not in DFU mode, or
+there is something wrong with your system's udev related to hotplug
+events. Check that you followed Apple's procedure correctly and that
+the appropriate USB device is detected.
+
+After 30 or so seconds of messages and status updates, you should see
+the Apple logo on the unbootable Mac's screen with a progress bar and
+@code{idevicerestore} will tell you that it is @code{Waiting for device to enter
+restore mode...}. If the unbootable Mac resets after a couple minutes
+and you get the message @code{ERROR: Device failed to enter restore mode.
+Please make sure that usbmuxd is running.}, then @code{usbmuxd} is likely
+not running. Start it and try again.
+
+Once the restore process starts, the progress bar will start moving
+and @code{idevicerestore} will spam lots of information about the process.
+If it fails with @code{ERROR: Unable to restore device}, your only choice
+may be to restart the process, but this time pass the @code{--erase} flag
+to @code{idevicerestore} and destroy all data on the unbootable Mac's
+internal drive.
+
+Otherwise, wait patiently while the restore proceeds. Expect it to
+take 20 or 30 minutes. Eventually @code{idevicerestore} will say @code{DONE} and
+the formerly-unbootable Mac will reboot and start recovery mode (if
+erasing was not necessary) or the out-of-the-box wizard (if the disk
+was erased) and you can use it again.
+
+Finally, shut down @code{usbmuxd} if on Linux and you started it manually.
+To clean up your second computer, remove the downloaded firmware, the
+@code{idevicerestore} and @code{usbmuxd} GC roots, and run the Nix garbage
+collector:
+
+@example
+sudo killall usbmuxd # if on Linux
+sudo rm -rf *.ipsw* UniversalMac*
+rm -f result* usbmuxd idevicerestore
+nix-collect-garbage
+@end example
+
+@node Un-installation
+@chapter Un-installation
+
+NixOS can be completely uninstalled by deleting the stub partition,
+EFI system partition, and root partition off the disk.
+
+Boot back into macOS by shutting down the machine fully, then pressing
+and holding the power button until the boot picker comes up. Select
+the macOS installation, then click ``Continue'' to boot it. Log into an
+administrator account and open @code{Terminal.app}.
+
+Identify the partitions to remove. In this example, @code{disk0s3} is the
+stub because of its small size. @code{disk0s4} is the EFI system partition
+and @code{disk0s5} is the root partition:
+
+@example
+% diskutil list disk0
+/dev/disk0 (internal):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                         1.0 TB     disk0
+   1:             Apple_APFS_ISC                         524.3 MB   disk0s1
+   2:                 Apple_APFS Container disk4         900.0 GB   disk0s2
+   3:                 Apple_APFS Container disk3         2.5 GB     disk0s3
+   4:                        EFI EFI - NIXOS             512.8 MB   disk0s4
+   5:           Linux Filesystem                         91.6 GB    disk0s5
+   6:        Apple_APFS_Recovery                         5.4 GB     disk0s6
+@end example
+
+@quotation Warning
+Unlike Linux, on macOS each partition's identifier does not
+necessarily equal its partition index. Double check the identifiers of
+your own system!
+@end quotation
+
+Remove the EFI system partition and root partition:
+
+@example
+% diskutil eraseVolume free free disk0s4
+Started erase on disk0s4 (EFI - NIXOS)
+Unmounting disk
+Finished erase on disk0
+% diskutil eraseVolume free free disk0s5
+Started erase on disk0s5
+Unmounting disk
+Finished erase on disk0
+@end example
+
+Remove the stub partition:
+
+@example
+% diskutil apfs deleteContainer disk0s3
+Started APFS operation on disk3
+Deleting APFS Container with all of its APFS Volumes
+[...]
+Removing disk0s3 from partition map
+@end example
+
+Expand the main macOS partition to use the resulting free space. This
+command will take a few minutes to run; do not attempt to use the
+machine while it is in progress:
+
+@example
+% diskutil apfs resizeContainer disk0s2 0
+Started APFS operation
+Aligning grow delta to 94,662,586,368 bytes and targeting a new physical
+store size of 994,662,584,320 bytes
+[...]
+Finished APFS operation
+@end example
+
+To complete the uninstallation, open the @code{Startup Disk} pane of
+@code{System Preferences} and select your macOS installation as the
+startup disk. If this is not done, the next boot will fail, and you
+will be asked to select another OS to boot from.
+
+@node Binary cache
+@chapter Binary cache
+
+Some components needed on Apple Silicon systems are rather big and
+need a long time to build, specifically the kernel. This is why you
+might consider using substitutes from a binary cache.
+
+Our GitHub Actions workflow builds all of the declared packages every
+time the main branch is pushed, and pushes all store paths to the
+@code{nixos-apple-silicon} binary cache.
+
+If you decide to use the nixos-apple-silicon binary cache, you can use
+the following configuration snippet:
+
+@example nix
+nix.settings = @{
+  extra-substituters = [
+    "https://nixos-apple-silicon.cachix.org"
+  ];
+  extra-trusted-public-keys = [
+    "nixos-apple-silicon.cachix.org-1:8psDu5SA5dAD7qA0zMy5UT292TxeEPzIz8VVEr2Js20="
+  ];
+@};
+@end example
+
+@node Who are you trusting by adding this binary cache
+@section Who are you trusting by adding this binary cache
+
+When using additional substituters in Nix/NixOS, you always trust the
+actors who are involved or have access to the infrastructure for
+populating the binary cache. No matter which packages you intend to
+substitute over a binary cache, you should always assume that any of
+the involved people could gain remote root-level access to your
+system.
+
+Currently, for the nixos-apple-silicon binary cache, the following
+parties are involved:
+
+@enumerate
+@item
+The NixOS Apple Silicon maintainers (Currently: @value{MAINTAINERS})
+@item
+The nix-community org admins
+@item
+Microsoft GitHub
+@item
+@url{https://namespace.so, namespace} for the GitHub Action Runners
+@item
+Cachix (for using their cachix/install-nix-action &
+cachix/cachix-action in our CI)
+@end enumerate
+
+@node Release model/process
+@chapter Release model/process
+
+Development targets the @code{main} branch. Every feature PR targets
+this branch.
+
+After major fixes and features, we fully test the main branch and
+create a release, tagged as a commit on the main branch with the
+@code{release-YYYY-MM-DD} tag. These releases supply a known-working
+installer image for new users.
+
+@section Nixpkgs compatibility
+The @code{nixos-apple-silicon} @code{main} branch is only tested to
+work on NixOS unstable. It is updated to fix incompatibilities as they
+arise.
+
+Releases additionally represent a known-working commit of nixpkgs,
+both that can build a correctly-functioning installer and that has
+packages available which provide a proper user experience. However,
+they are performed much less frequently than NixOS itself updates, so
+many users may prefer to track the unstable branch directly and accept
+occasional issues.
+
+Whenever a new NixOS release happens, we branch off a
+@code{release-YY.MM} branch, which is updated to reference the
+corresponding stable NixOS commit. Users of NixOS stable are
+encouraged to stay on this branch (instead of @code{main}). This
+branch will only be updated to address breakages with the
+corresponding NixOS stable release.
+
+@section Release process
+Releases on the @code{main} branch are performed by maintainers using
+a PR against the branch. The PR must be tested as below and contain
+the updates referenced below. It may contain e.g. installer fixes as
+well. The PR should be approved by at least one other maintainer or
+contributor before merging, though it does not need to be tested on
+multiple machine types.
+
+Stable releases are performed by maintainers first creating the branch
+to point to current @code{main}. Then, a PR is created against the
+branch for the release. This PR must contain the corresponding stable
+commit, and needs to be tested for installed booting and
+functionality. It does not need installer testing, nor a release date
+update or tag. The PR should be approved by at least one other
+maintainer or contributor before merging, though it does not need to
+be tested on multiple machine types.
+
+@subsection Testing
+@enumerate
+@item
+The installer image (@code{.#installer-bootstrap}) is built on both
+@code{aarch64-linux} and @code{x86_64-linux}.
+@item
+The installer (ideally @code{x86_64-linux}) is transferred to a USB
+drive, booted, and used to perform installation (i.e.
+@code{nixos-install} is re-run, this does not need a disk reformat or
+a re-run of the Asahi installer). This confirms the installer boots
+and that networking, disk access, and USB are functional. Installers
+for releases containing u-boot and m1n1 updates should be tested to
+boot again after installation as those upgrades can cause USB
+breakage.
+@item Once installed, the system is booted and important features are tested.
+@enumerate
+  @item A desktop environment (e.g. KDE Plasma/GNOME) starts and programs work
+  @item Networking connects
+  @item Hardware accelerated rendering is used
+  @item Speakers and microphone work
+  @item Other items a user would expect
+@end enumerate
+@item
+Small broken items can be additional commits in the release PR, large
+items might need their own PR.
+@end enumerate
+
+@subsection Release
+
+@enumerate
+@item Once validated, a release date is picked (might not be date of final merge)
+@itemize
+   @item Update date and software versions in guide and README
+   @item Write release notes including date
+@end itemize
+@item
+PR is filed with above testing work and commits. It must be updated to
+reference the current @code{main}! It should also reference the
+machine used.
+@item
+If PR falls behind @code{main}, it is re-based or @code{main} is
+merged into it
+@item
+After approval and merge, the merge commit on @code{main} is tagged
+with the @code{release-YYYY-MM-DD} tag (filled in with release date)
+and the installer is automatically built and uploaded.
+@item
+If the installer is not buildable in CI for some reason and a commit
+to fix is needed, a new release (on a different day) should be done.
+@end enumerate
+
+@include release-notes.texi
+
+@node Copying
+@unnumbered Copying
+@insertcopying
+
+@bye

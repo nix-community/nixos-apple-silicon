@@ -4,13 +4,13 @@ This repository contains package expressions and NixOS configuration modules whi
 
 We aim to generally replicate the experience and software configuration/versions provided by the Asahi Linux reference distro, and we rely primarily on their hard work. Contributions to improve the NixOS experience and address specific issues are welcome, but configuration and versions which diverge significantly will not be accepted.
 
-Please see the documentation and guide below to get started.
-
 ## Documentation
 
-* [Release Notes](docs/release-notes.md)
-* [Binary Cache](docs/binary-cache.md)
-* [Setup, Installation, and Maintenance Guide (2025-08-23)](docs/uefi-standalone.md)
+To read the installation/maintenance manual, use an existing Nix installation to open a page in your web browser displaying the manual.
+
+```shellsession
+$ nix --extra-experimental-features "nix-command flakes" run github:nix-community/nixos-apple-silicon#nas-manual
+```
 
 ## Credits
 
