@@ -9,7 +9,7 @@ cannot be dropped due to upstream nixpkgs' policy of not accepting any more
 custom versions of these packages. Many thanks to contributors who worked in
 this repository and with nixpkgs to achieve this goal.
 
-THe kernel build is now also a full NixOS kernel build, enabling every module.
+The kernel build is now also a full NixOS kernel build, enabling every module.
 This means no more issues with hardware support and a more standard experience.
 This does, however, increase build times, but CI and a public cache (courtesy of
 nix-community and Cachix) have been set up to alleviate this.
