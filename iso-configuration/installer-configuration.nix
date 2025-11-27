@@ -109,7 +109,7 @@
     To set up a wireless connection, run `iwctl`.
   '';
 
-  nixpkgs.overlays = [
+  nixpkgs.overlays = lib.optionals (config.nixpkgs.hostPlatform.system != config.nixpkgs.buildPlatform.system) [
     (final: prev: {
       # disabling pcsclite avoids the need to cross-compile gobject
       # introspection stuff which works now but is slow and unnecessary
@@ -126,6 +126,12 @@
       # compute translations
       util-linux = prev.util-linux.override {
         translateManpages = false;
+      };
+
+      # avoids broken cross-compilation
+      # https://github.com/NixOS/nixpkgs/pull/460394/
+      libcap = prev.libcap.override {
+        withGo = false;
       };
     })
   ];

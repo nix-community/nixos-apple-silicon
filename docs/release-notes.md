@@ -2,6 +2,21 @@
 
 This file contains important information for each release.
 
+## 2025-11-18
+
+This release drops every custom package except the kernel and U-Boot. These
+cannot be dropped due to upstream nixpkgs' policy of not accepting any more
+custom versions of these packages. Many thanks to contributors who worked in
+this repository and with nixpkgs to achieve this goal.
+
+THe kernel build is now also a full NixOS kernel build, enabling every module.
+This means no more issues with hardware support and a more standard experience.
+This does, however, increase build times, but CI and a public cache (courtesy of
+nix-community and Cachix) have been set up to alleviate this.
+
+Installer images are now built for ARM by default using public GitHub Actions
+runners.
+
 ## 2025-08-23
 
 This release drops our custom Mesa override, which fixes a build issue with
