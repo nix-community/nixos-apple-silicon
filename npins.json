@@ -1,0 +1,57 @@
+{
+  "pins": {
+    "nixos-stable": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "nixos-25.11",
+      "submodules": false,
+      "revision": "30a3c519afcf3f99e2c6df3b359aec5692054d92",
+      "url": "https://github.com/nixos/nixpkgs/archive/30a3c519afcf3f99e2c6df3b359aec5692054d92.tar.gz",
+      "hash": "13rp7g4ivphc70z6fdb2gf6angzr6qm2vrx32nk286nli991117h"
+    },
+    "nixos-unstable": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "nixos-unstable",
+      "submodules": false,
+      "revision": "c5ae371f1a6a7fd27823bc500d9390b38c05fa55",
+      "url": "https://github.com/nixos/nixpkgs/archive/c5ae371f1a6a7fd27823bc500d9390b38c05fa55.tar.gz",
+      "hash": "18g0f8cb9m8mxnz9cf48sks0hib79b282iajl2nysyszph993yp0"
+    },
+    "nixos-unstable-small": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "nixos-unstable-small",
+      "submodules": false,
+      "revision": "d410f1407c0722a50c8dfeba1be251e50655dd49",
+      "url": "https://github.com/nixos/nixpkgs/archive/d410f1407c0722a50c8dfeba1be251e50655dd49.tar.gz",
+      "hash": "0ws04l6p810iz515jgmwi1k44ix2lcq3lmpfhna3rq839pjd00lx"
+    },
+    "nixpkgs": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "0b3f25eec177b27859be79a15822c979714fd682",
+      "url": "https://github.com/nixos/nixpkgs/archive/0b3f25eec177b27859be79a15822c979714fd682.tar.gz",
+      "hash": "133rdham5g1vwn6zadk2cvhwxps9bd80cl8dcdchgfv2hljjg2ys"
+    }
+  },
+  "version": 5
+}
