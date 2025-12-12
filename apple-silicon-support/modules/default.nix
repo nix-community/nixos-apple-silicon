@@ -37,6 +37,8 @@
           See https://github.com/nix-community/nixos-apple-silicon/issues/380
           for more info.'' pkgs.mesa
       );
+
+      environment.etc."drirc".source = ./10-asahi-browser-apple.conf;
     };
 
   options.hardware.asahi = {
