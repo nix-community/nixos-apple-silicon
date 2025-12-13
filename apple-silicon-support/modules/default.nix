@@ -31,11 +31,14 @@
 
       # 900 is higher priority than mkDefault but lower than just setting
       hardware.graphics.package = lib.mkOverride 900 (
-        lib.warnIf (lib.versionAtLeast pkgs.mesa.version "25.3") ''
-          Mesa 25.3 is known to cause crashes in Firefox on Asahi GPUs.
-          Please pin nixpkgs c5ae371f1a6a7fd27823 or earlier if affected.
-          See https://github.com/nix-community/nixos-apple-silicon/issues/380
-          for more info.'' pkgs.mesa
+        lib.warnIf
+          (lib.versionAtLeast pkgs.mesa.version "25.3" && lib.versionOlder pkgs.mesa.version "25.3.2")
+          ''
+            Mesa 25.3.0 and 25.3.1 are known to cause crashes in Firefox on Asahi
+            GPUs.  Please update to Mesa >= 25.3.2 by updating Nixpkgs.  See
+            https://github.com/nix-community/nixos-apple-silicon/issues/380 for
+            more info.''
+          pkgs.mesa
       );
     };
 
