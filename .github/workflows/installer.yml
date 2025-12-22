@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: cachix/install-nix-action@v31
         with:
@@ -55,7 +55,7 @@ jobs:
           echo installer dest: "$INSTALLER_DEST"
           cp result/iso/*.iso "$INSTALLER_DEST"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: installer
           path: ./*.iso
