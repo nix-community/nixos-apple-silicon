@@ -83,10 +83,6 @@
   hardware.enableRedistributableFirmware = lib.mkForce false;
   services.pulseaudio.enable = false;
   hardware.asahi.setupAsahiSound = false;
-  # avoid including non-reproducible dbus docs
-  documentation.doc.enable = false;
-  documentation.info.enable = lib.mkForce false;
-  documentation.nixos.enable = lib.mkOverride 49 false;
   system.extraDependencies = lib.mkForce [ ];
 
   # Disable wpa_supplicant because it can't use WPA3-SAE on broadcom chips that are used on macs and it is harder to use and less mainained than iwd in general
@@ -96,45 +92,36 @@
     enable = true;
     settings.General.EnableNetworkConfiguration = true;
   };
-  networking.networkmanager.enable = lib.mkForce false;
+  networking.networkmanager.wifi.backend = "iwd";
 
-  # let user know to use iwctl to get access to iwd
-  services.getty.helpLine = lib.mkForce ''
-    The "nixos" and "root" accounts have empty passwords.
+  nixpkgs.overlays =
+    lib.optionals (config.nixpkgs.hostPlatform.system != config.nixpkgs.buildPlatform.system)
+      [
+        (final: prev: {
+          # disabling pcsclite avoids the need to cross-compile gobject
+          # introspection stuff which works now but is slow and unnecessary
+          libfido2 = prev.libfido2.override {
+            withPcsclite = false;
+          };
+          openssh = prev.openssh.overrideAttrs (old: {
+            # we have to cross compile openssh ourselves for whatever reason
+            # but the tests take quite a long time to run
+            doCheck = false;
+          });
 
-    To log in over ssh you must set a password for either "nixos" or "root"
-    with `passwd` (prefix with `sudo` for "root"), or add your public key to
-    /home/nixos/.ssh/authorized_keys or /root/.ssh/authorized_keys.
+          # avoids having to compile a bunch of big things (like texlive) to
+          # compute translations
+          util-linux = prev.util-linux.override {
+            translateManpages = false;
+          };
 
-    To set up a wireless connection, run `iwctl`.
-  '';
-
-  nixpkgs.overlays = lib.optionals (config.nixpkgs.hostPlatform.system != config.nixpkgs.buildPlatform.system) [
-    (final: prev: {
-      # disabling pcsclite avoids the need to cross-compile gobject
-      # introspection stuff which works now but is slow and unnecessary
-      libfido2 = prev.libfido2.override {
-        withPcsclite = false;
-      };
-      openssh = prev.openssh.overrideAttrs (old: {
-        # we have to cross compile openssh ourselves for whatever reason
-        # but the tests take quite a long time to run
-        doCheck = false;
-      });
-
-      # avoids having to compile a bunch of big things (like texlive) to
-      # compute translations
-      util-linux = prev.util-linux.override {
-        translateManpages = false;
-      };
-
-      # avoids broken cross-compilation
-      # https://github.com/NixOS/nixpkgs/pull/460394/
-      libcap = prev.libcap.override {
-        withGo = false;
-      };
-    })
-  ];
+          # avoids broken cross-compilation
+          # https://github.com/NixOS/nixpkgs/pull/460394/
+          libcap = prev.libcap.override {
+            withGo = false;
+          };
+        })
+      ];
 
   # avoids the need to cross-compile gobject introspection stuff which works
   # now but is slow and unnecessary
