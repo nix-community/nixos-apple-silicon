@@ -41,7 +41,7 @@ tested on multiple machine types.
 
 #### Testing
 
- - The installer image (`.#installer-bootstrap`) is built on both
+ - The installer image (`installer-bootstrap`) is built on both
    `aarch64-linux` and `x86_64-linux`.
  - The installer (ideally `x86_64-linux`) is transferred to a USB drive, booted,
    and used to perform installation (i.e. `nixos-install` is re-run, this does
