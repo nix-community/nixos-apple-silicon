@@ -12,12 +12,16 @@
     config = { };
     overlays = [ ];
   },
-  crossCompPkgs ? import nixpkgs {
-    crossSystem.system = "aarch64-linux";
-    localSystem.system = system;
-    config = { };
-    overlays = [ ];
-  },
+  crossCompPkgs ?
+    if (system == "aarch64-linux") then
+      pkgs
+    else
+      import nixpkgs {
+        crossSystem.system = "aarch64-linux";
+        localSystem.system = system;
+        config = { };
+        overlays = [ ];
+      },
 }:
 {
   shell = pkgs.mkShellNoCC {
