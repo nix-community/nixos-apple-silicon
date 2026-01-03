@@ -40,6 +40,32 @@
         default = outputs.nixosModules.apple-silicon-support;
       };
 
+      apps =
+        inputs.nixpkgs.lib.genAttrs
+          (
+            systems
+            ++ [
+              "x86_64-darwin"
+              "aarch64-darwin"
+            ]
+          )
+          (system: {
+            nas-manual =
+              let
+                drv =
+                  inputs.nixpkgs.legacyPackages.${system}.callPackage apple-silicon-support/packages/nas-manual
+                    {
+                    };
+              in
+              {
+                type = "app";
+                program = "${drv}/bin/" + drv.meta.mainProgram;
+                meta.description = "View the NixOS Apple Silicon manual.";
+              };
+
+            default = outputs.apps.${system}.nas-manual;
+          });
+
       packages = forAllSystems (
         system:
         let
@@ -57,6 +83,8 @@
             ;
 
           linux-asahi = pkgs.linux-asahi.kernel;
+
+          nas-manual = pkgs.nas-manual;
 
           installer-bootstrap =
             let

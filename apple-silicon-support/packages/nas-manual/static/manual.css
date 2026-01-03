@@ -1,0 +1,286 @@
+/*
+   Custom CSS for HTML documents generated with Texinfo 7.x's makeinfo.
+   Public domain 2023 Luis Felipe López Acevedo. All rights waived.
+
+   Adapted for use in nixos-apple-silicon.
+*/
+
+/* VARIABLES */
+:root {
+  color-scheme: light dark;
+  /* Colors */
+  --bg-color: #e8effc;
+  --border-color: silver;
+  --link-color: #0969da;
+  --sheet-color: white;
+  --sheet-shadow: gray;
+  --symbol-color: black;
+  --symbol-background: #f0f1f2;
+  --text-color: black;
+  --verbatim-background: #f6f8fa;
+  --verbatim-foreground: black;
+  /* Fonts */
+  --base-font-size: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #0d1117;
+    --border-color: black;
+    --link-color: #4493f8;
+    --sheet-color: #0d1117;
+    --sheet-shadow: none;
+    --symbol-color: darkkhaki;
+    --text-color: #f5f5f5;
+    --symbol-color: #f0f6fc;
+    --symbol-background: #1e242a;
+    --verbatim-background: #151b23;
+    --verbatim-foreground: #f0f6fc;
+  }
+}
+/* END VARIABLES */
+
+/* NATIVE ELEMENTS */
+a:link,
+a:visited {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+a:active,
+a:focus,
+a:hover {
+  text-decoration: underline;
+}
+
+abbr,
+acronym {
+  cursor: help;
+}
+
+blockquote {
+  border-color: var(--text-color);
+  border-style: none none none solid;
+  border-width: 0.5em;
+  margin-left: 0em;
+  padding-left: 1.5em;
+}
+
+body {
+  background-color: var(--sheet-color);
+  box-shadow: 0 0 2px var(--sheet-shadow);
+  box-sizing: border-box;
+  color: var(--text-color);
+  font-family: sans-serif;
+  font-size: var(--base-font-size);
+  margin: 50px auto;
+  max-width: 960px;
+  padding: 50px;
+}
+
+code,
+samp,
+tt,
+var {
+  color: var(--symbol-color);
+  background-color: var(--symbol-background);
+}
+
+div.example,
+div.lisp {
+  margin: 0px;
+}
+
+dl {
+  margin: 3em 0em;
+}
+
+dl dl {
+  margin: 0em;
+}
+
+dt {
+  background-color: var(--bg-color);
+  padding: 0.5em;
+}
+
+dd dt {
+  background-color: transparent;
+  border-color: var(--border-color);
+  border-style: none none none dotted;
+  border-width: 0.5em;
+  padding: 0.5em;
+}
+
+p {
+  line-height: 150%;
+}
+
+h1,
+h2,
+h2.contents-heading,
+h3,
+h4 {
+  padding: 20px 0px 0px 0px;
+  font-weight: normal;
+}
+
+h1 {
+  font-size: 2.4em;
+}
+
+h2 {
+  font-size: 2.2em;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 1.8em;
+}
+
+h4 {
+  font-size: 1.4em;
+}
+
+hr {
+  background-color: var(--border-color);
+  border-style: none;
+  height: 1px;
+  margin: 0px;
+}
+
+html {
+  background-color: var(--bg-color);
+}
+
+img {
+  max-width: 100%;
+}
+
+li {
+  padding: 3px;
+}
+
+pre.display,
+pre.example-preformatted,
+pre.format,
+pre.lisp-preformatted,
+pre.verbatim {
+  overflow: auto;
+}
+
+pre.example-preformatted,
+pre.lisp-preformatted,
+pre.verbatim {
+  border-radius: 15px;
+  background-color: var(--verbatim-background);
+  border-color: black;
+  border-style: none;
+  color: var(--verbatim-foreground);
+  font-size: smaller;
+  padding: 1em;
+}
+
+pre.menu-comment-preformatted {
+  border-color: var(--bg-color);
+  border-bottom-style: solid;
+  border-width: thin;
+  font-family: sans;
+}
+
+strong.def-name {
+  font-size: var(--base-font-size);
+}
+
+table {
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table.cp-entries-printindex *,
+table.fn-entries-printindex *,
+table.ky-entries-printindex *,
+table.pg-entries-printindex *,
+table.tp-entries-printindex *,
+table.vr-entries-printindex * {
+  background-color: inherit;
+  border-style: none;
+}
+
+td,
+th {
+  border-color: var(--border-color);
+  border-style: solid;
+  border-width: thin;
+  padding: 10px;
+}
+
+th {
+  background-color: var(--bg-color);
+}
+/* END NATIVE ELEMENTS */
+
+/* CLASSES */
+/* .contents { */
+/*   margin-bottom: 4em; */
+/* } */
+
+.def-type {
+  color: var(--text-color);
+}
+
+.def-var-arguments {
+  color: var(--text-color);
+}
+
+.float {
+  margin: 3em 0em;
+}
+
+.caption {
+  font-size: smaller;
+  text-align: center;
+}
+
+.float > img {
+  display: block;
+  margin: auto;
+}
+
+.footnote {
+  font-size: smaller;
+  margin: 5em 0em;
+}
+
+.footnote h3 {
+  display: inline;
+  font-size: small;
+}
+
+.key {
+  color: var(--symbol-color);
+}
+
+.menu * {
+  border-style: none;
+}
+
+.menu td {
+  padding: 0.5em 0em;
+}
+
+.menu td:last-child {
+  width: 60%;
+}
+
+.menu th {
+  background-color: inherit;
+}
+
+.nav-panel {
+  background-color: var(--bg-color);
+  font-size: small;
+  padding: 0.2em 1em;
+}
+/* END CLASSES */
