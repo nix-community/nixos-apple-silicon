@@ -1,0 +1,36 @@
+{
+  "pins": {
+    "nixos-stable": {
+      "type": "Channel",
+      "name": "nixos-25.11",
+      "url": "https://releases.nixos.org/nixos/25.11/nixos-25.11.2561.f560ccec6b11/nixexprs.tar.xz",
+      "hash": "sha256-b6Ar71wSPahmaDr7L8gCvAPsuvd7UM4NvKldKB7V8KI="
+    },
+    "nixos-unstable": {
+      "type": "Channel",
+      "name": "nixos-unstable",
+      "url": "https://releases.nixos.org/nixos/unstable/nixos-26.05pre916364.3e2499d5539c/nixexprs.tar.xz",
+      "hash": "sha256-gtanTxYMENOVHWdS4QgxxKGPaSqvcNJVw0KBfaF5/Bo="
+    },
+    "nixos-unstable-small": {
+      "type": "Channel",
+      "name": "nixos-unstable-small",
+      "url": "https://releases.nixos.org/nixos/unstable-small/nixos-26.05pre917228.deefe7fae28c/nixexprs.tar.xz",
+      "hash": "sha256-pduYHGSGPzNYRPyyYgTwORBfXqS36mh+WivY//sv0YQ="
+    },
+    "nixpkgs": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "d8123a9e242790f0f94c7881bd69254bf6f439dc",
+      "url": "https://github.com/nixos/nixpkgs/archive/d8123a9e242790f0f94c7881bd69254bf6f439dc.tar.gz",
+      "hash": "sha256-VjPv6q9xg10SGEq0DjvNVVdRG3SsQp99SZrDQghGyOE="
+    }
+  },
+  "version": 7
+}

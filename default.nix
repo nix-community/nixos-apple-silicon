@@ -1,25 +1,58 @@
-# This file provides backward compatibility to nix < 2.4 clients
 {
+  self ? import ./. { },
+  sources ? builtins.fromJSON (builtins.readFile ./npins.json),
   system ? builtins.currentSystem,
-}:
-let
-  lock = builtins.fromJSON (builtins.readFile ./flake.lock);
-
-  inherit (lock.nodes.flake-compat.locked)
-    owner
-    repo
-    rev
-    narHash
-    ;
-
-  flake-compat = fetchTarball {
-    url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
-    sha256 = narHash;
-  };
-
-  flake = import flake-compat {
+  nixos-release ? "nixos-unstable",
+  nixpkgs ? fetchTarball {
+    url = sources.pins.${nixos-release}.url;
+    sha256 = sources.pins.${nixos-release}.hash;
+  },
+  pkgs ? import nixpkgs {
     inherit system;
-    src = ./.;
+    config = { };
+    overlays = [ ];
+  },
+  crossCompPkgs ?
+    if (system == "aarch64-linux") then
+      pkgs
+    else
+      import nixpkgs {
+        crossSystem.system = "aarch64-linux";
+        localSystem.system = system;
+        config = { };
+        overlays = [ ];
+      },
+}:
+{
+  shell = pkgs.mkShellNoCC {
+    packages = with pkgs; [
+      npins
+      nixfmt-tree
+    ];
   };
-in
-flake.defaultNix
+
+  overlays = {
+    apple-silicon-overlay = import ./apple-silicon-support/packages/overlay.nix;
+  };
+
+  nixosModules = {
+    apple-silicon-support = ./apple-silicon-support;
+  };
+
+  installer-bootstrap =
+    let
+      installer-system = crossCompPkgs.callPackage ./iso-configuration {
+        inherit self system;
+      };
+    in
+    installer-system.config.system.build.isoImage.overrideAttrs (oldAttrs: {
+      passthru = (oldAttrs.passthru or { }) // {
+        config = installer-system.config;
+      };
+    });
+
+  packages = {
+    linux-asahi = (crossCompPkgs.callPackage ./apple-silicon-support/packages/linux-asahi { }).kernel;
+    uboot-asahi = crossCompPkgs.callPackage ./apple-silicon-support/packages/uboot-asahi { };
+  };
+}

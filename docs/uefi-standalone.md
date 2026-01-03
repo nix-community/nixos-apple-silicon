@@ -54,18 +54,6 @@ $ git clone https://github.com/nix-community/nixos-apple-silicon/
 $ cd nixos-apple-silicon
 ```
 
-#### m1n1
-
-The Asahi Linux project has developed m1n1 as a bridge between Apple's boot firmware and the Linux world. m1n1 is installed as a faux macOS kernel into a stub macOS installation. In addition to booting Linux (or U-Boot), m1n1 also sets up the hardware and allows remote control and debugging over USB.
-
-Change directories to the repository, then use Nix to build m1n1 and symlink the result to `m1n1`:
-
-```
-nixos-apple-silicon$ nix build --extra-experimental-features 'nix-command flakes' .#m1n1 -o m1n1
-```
-
-m1n1 has been built and the build products are now in `m1n1/build/`. You can also run m1n1's scripts such as `chainload.py` using a command like `m1n1/bin/m1n1-chainload`.
-
 #### U-Boot
 
 In the default installation, m1n1 loads U-Boot and U-Boot is used to set up a standard UEFI environment from which GRUB or systemd-boot or whatever can be booted. Due to the limitations of the Apple boot picker, there must be one EFI system partition per installed OS.
@@ -73,7 +61,7 @@ In the default installation, m1n1 loads U-Boot and U-Boot is used to set up a st
 Use Nix to build U-Boot along with m1n1 and the device trees:
 
 ```
-nixos-apple-silicon$ nix build --extra-experimental-features 'nix-command flakes' .#uboot-asahi -o u-boot
+nixos-apple-silicon$ nix-build -A packages.uboot-asahi -o u-boot
 ```
 
 The `.bin` file with m1n1, the device trees, and U-Boot joined together is now in `u-boot/`.
@@ -82,10 +70,10 @@ The `.bin` file with m1n1, the device trees, and U-Boot joined together is now i
 
 The bootstrap NixOS installer ISO contains UEFI-compatible GRUB, the Asahi Linux kernel, its initrd, and enough packages and drivers to allow connection to the Internet in order to download and install a full NixOS system.
 
-Building the image requires downloading of a large amount of data and compilation of a number of packages, including the kernel. On my six core Xeon laptop, building it took about 11 minutes (90 CPU minutes). Your mileage may vary. You can use the `-j` option to specify the number of packages to build in parallel. Each is allowed to use all cores, but for this build, most do not use more than one. Therefore, it is recommended to set it to less than the number of physical cores in your machine. You can also use the `-L` option to view detailed build logs.
+Building the image requires downloading of a large amount of data and compilation of a number of packages, including the kernel. On my six core Xeon laptop, building it took about 11 minutes (90 CPU minutes). Your mileage may vary. You can use the `-j` option to specify the number of packages to build in parallel. Each is allowed to use all cores, but for this build, most do not use more than one. Therefore, it is recommended to set it to less than the number of physical cores in your machine.
 
 ```
-nixos-apple-silicon$ nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap -o installer -j4 -L
+nixos-apple-silicon$ nix-build -j4 --log-format bar-with-logs -A installer-bootstrap -o installer
 ```
 
 The installer ISO is now available as `installer/iso/nixos-*.iso`. Use `dd` or similar to transfer it to your USB flash drive. Programs like `unetbootin` are not supported.

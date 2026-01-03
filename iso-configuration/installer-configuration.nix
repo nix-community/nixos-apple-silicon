@@ -34,34 +34,35 @@
   swapDevices = lib.mkOverride 60 [ ];
   fileSystems = lib.mkOverride 60 config.lib.isoFileSystems;
 
-  boot.postBootCommands =
-    let
-      inherit (config.hardware.asahi.pkgs) asahi-fwextract;
-    in
-    ''
-      for o in $(</proc/cmdline); do
-        case "$o" in
-          live.nixos.passwd=*)
-            set -- $(IFS==; echo $o)
-            echo "nixos:$2" | ${pkgs.shadow}/bin/chpasswd
-            ;;
-        esac
-      done
+  boot.postBootCommands = ''
+    for o in $(</proc/cmdline); do
+      case "$o" in
+        live.nixos.passwd=*)
+          set -- $(IFS==; echo $o)
+          echo "nixos:$2" | ${pkgs.shadow}/bin/chpasswd
+          ;;
+      esac
+    done
 
-      echo Extracting Asahi firmware...
-      mkdir -p /tmp/.fwsetup/{esp,extracted}
+    echo Extracting Asahi firmware...
+    mkdir -p /tmp/.fwsetup/{esp,extracted}
 
-      mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /tmp/.fwsetup/esp
-      ${asahi-fwextract}/bin/asahi-fwextract /tmp/.fwsetup/esp/asahi /tmp/.fwsetup/extracted
-      umount /tmp/.fwsetup/esp
+    mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /tmp/.fwsetup/esp
+    ${pkgs.asahi-fwextract}/bin/asahi-fwextract /tmp/.fwsetup/esp/asahi /tmp/.fwsetup/extracted
+    umount /tmp/.fwsetup/esp
 
-      pushd /tmp/.fwsetup/
-      cat /tmp/.fwsetup/extracted/firmware.cpio | ${pkgs.cpio}/bin/cpio -id --quiet --no-absolute-filenames
-      mkdir -p /lib/firmware
-      mv vendorfw/* /lib/firmware
-      popd
-      rm -rf /tmp/.fwsetup
-    '';
+    pushd /tmp/.fwsetup/
+    cat /tmp/.fwsetup/extracted/firmware.cpio | ${pkgs.cpio}/bin/cpio -id --quiet --no-absolute-filenames
+    mkdir -p /lib/firmware
+    mv vendorfw/* /lib/firmware
+    popd
+    rm -rf /tmp/.fwsetup
+  ''
+  + ''
+    mkdir -p /etc/nixos
+    cp ${./installer-configuration.nix} /etc/nixos/installer-configuration.nix
+    cp -r ${../apple-silicon-support} /etc/nixos/apple-silicon-support
+  '';
 
   # can't legally be incorporated into the installer image
   # (and is automatically extracted at boot above)
@@ -109,32 +110,34 @@
     To set up a wireless connection, run `iwctl`.
   '';
 
-  nixpkgs.overlays = lib.optionals (config.nixpkgs.hostPlatform.system != config.nixpkgs.buildPlatform.system) [
-    (final: prev: {
-      # disabling pcsclite avoids the need to cross-compile gobject
-      # introspection stuff which works now but is slow and unnecessary
-      libfido2 = prev.libfido2.override {
-        withPcsclite = false;
-      };
-      openssh = prev.openssh.overrideAttrs (old: {
-        # we have to cross compile openssh ourselves for whatever reason
-        # but the tests take quite a long time to run
-        doCheck = false;
-      });
+  nixpkgs.overlays =
+    lib.optionals (config.nixpkgs.hostPlatform.system != config.nixpkgs.buildPlatform.system)
+      [
+        (final: prev: {
+          # disabling pcsclite avoids the need to cross-compile gobject
+          # introspection stuff which works now but is slow and unnecessary
+          libfido2 = prev.libfido2.override {
+            withPcsclite = false;
+          };
+          openssh = prev.openssh.overrideAttrs (old: {
+            # we have to cross compile openssh ourselves for whatever reason
+            # but the tests take quite a long time to run
+            doCheck = false;
+          });
 
-      # avoids having to compile a bunch of big things (like texlive) to
-      # compute translations
-      util-linux = prev.util-linux.override {
-        translateManpages = false;
-      };
+          # avoids having to compile a bunch of big things (like texlive) to
+          # compute translations
+          util-linux = prev.util-linux.override {
+            translateManpages = false;
+          };
 
-      # avoids broken cross-compilation
-      # https://github.com/NixOS/nixpkgs/pull/460394/
-      libcap = prev.libcap.override {
-        withGo = false;
-      };
-    })
-  ];
+          # avoids broken cross-compilation
+          # https://github.com/NixOS/nixpkgs/pull/460394/
+          libcap = prev.libcap.override {
+            withGo = false;
+          };
+        })
+      ];
 
   # avoids the need to cross-compile gobject introspection stuff which works
   # now but is slow and unnecessary
