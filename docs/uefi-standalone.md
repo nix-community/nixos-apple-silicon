@@ -58,13 +58,26 @@ $ cd nixos-apple-silicon
 
 The Asahi Linux project has developed m1n1 as a bridge between Apple's boot firmware and the Linux world. m1n1 is installed as a faux macOS kernel into a stub macOS installation. In addition to booting Linux (or U-Boot), m1n1 also sets up the hardware and allows remote control and debugging over USB.
 
-Change directories to the repository, then use Nix to build m1n1 and symlink the result to `m1n1`:
+##### Development Setup
+
+Generally, development of m1n1, U-Boot or the Linux kernel involves chainloading different payloads via the m1n1 proxyclient and optionally running them inside the m1n1 Hypervisor.
+
+This is described [in the Asahi Wiki m1n1 User Guide](https://asahilinux.org/docs/sw/m1n1-user-guide/). Since the stage 1 m1n1 is provided by the Asahi Installer, the same "Backdoor proxy mode in stage 1 release builds" and chainloading functionality work on a NixOS Apple Silicon install too.
+
+Building m1n1 from a source checkout and running the proxyclient on another NixOS machine (NixOS Apple Silicon or not), requires some extra setup. In your m1n1 checkout run the following:
 
 ```
-nixos-apple-silicon$ nix build --extra-experimental-features 'nix-command flakes' .#m1n1 -o m1n1
+$ nix-shell "<nixpkgs>" -A pkgsCross.aarch64-multiplatform.m1n1 # Get dependencies for compiling m1n1
+$ nix-shell -p python3Packages.{construct,pyserial} # Get dependencies for using proxyclient tools
+$ make ARCH=aarch64-unknown-linux-gnu- CHAINLOADING=1 [...]
 ```
 
-m1n1 has been built and the build products are now in `m1n1/build/`. You can also run m1n1's scripts such as `chainload.py` using a command like `m1n1/bin/m1n1-chainload`.
+To use some of the proxyclient features on on x86\_64, you'll need to adjust the cross-compilation prefix to match the targetPrefix used in Nixpkgs:
+
+Replace `aarch64-linux-gnu-` with `aarch64-unknown-linux-gnu-` in `proxyclient/m1n1/toolchain.py`.
+
+Now you should be able to use the tools as described in the documentation e.g. `M1N1DEVICE=/dev/tty[...] python3 proxyclient/tools/chainload.py -r build/m1n1.bin`.
+
 
 #### U-Boot
 
@@ -316,24 +329,6 @@ When the system reboots, the bootloader will come up and boot the default config
 
 The machine is now set up to boot NixOS by default when turned on. To access the boot picker, turn off the machine, then hold the power button to turn the machine on instead of just pressing it. Let go once the options come up. To boot a particular OS once, click on it, then click Continue underneath it. To switch the default OS, click on the desired default, hold Option (Alt), then click Always Use underneath it.
 
-#### Hypervisor Boot
-
-By selecting the appropriate menu option in the Asahi Linux installer, you can also choose to install m1n1 without U-Boot and run U-Boot, the bootloader, and the OS under m1n1's hypervisor.
-
-To run U-Boot under the hypervisor, start m1n1 and attach the Mac to the host PC using an appropriate USB cable, change directories to the repo, then run:
-
-```
-nixos-apple-silicon$ m1n1/bin/m1n1-run_guest --raw u-boot/m1n1-u-boot.bin
-```
-
-To access the serial console, in a separate terminal run:
-
-```
-$ nix-shell -p picocom --run 'picocom /dev/ttyACM1'
-```
-
-Downloading the kernel over USB using m1n1 is not supported.
-
 ## Maintenance
 
 #### Rescue
@@ -363,7 +358,7 @@ You may have to reboot after updating in some cases. If something goes wrong, yo
 
 #### Apple Silicon Support Updates
 
-To update the Apple Silicon support module, including the Asahi kernel, U-Boot, and m1n1, you can simply download newer files from this repo under `apple-silicon-support` and place them under `/etc/nixos/apple-silicon-support`. Any changes will require a configuration rebuild and reboot to take effect. If you wish to customize your kernel, you can edit the kernel config in `/etc/nixos/apple-silicon-support/kernel/config`. Consult the comments in `/etc/nixos/apple-silicon-support/kernel/default.nix` and `/etc/nixos/apple-silicon-support/kernel/package.nix` for more details. Note that if the kernel device trees change, U-Boot will need to be updated too.
+To update the Apple Silicon support module, including m1n1, the Asahi kernel and U-Boot, you can simply download newer files from this repo under `apple-silicon-support` and place them under `/etc/nixos/apple-silicon-support`. Any changes will require a configuration rebuild and reboot to take effect. If you wish to customize your kernel, you can edit the kernel config in `/etc/nixos/apple-silicon-support/kernel/config`. Consult the comments in `/etc/nixos/apple-silicon-support/kernel/default.nix` and `/etc/nixos/apple-silicon-support/kernel/package.nix` for more details. Note that if the kernel device trees change, U-Boot will need to be updated too.
 
 U-Boot and m1n1 are automatically managed by NixOS' bootloader system. If you roll back to a previous generation and things do not work properly due to a device tree incompatibility, you can run `/run/current-system/bin/switch-to-configuration switch` then reboot to force the bootloader and the correct version of U-Boot/m1n1 to be reinstalled and loaded.
 
@@ -441,7 +436,7 @@ Finally, shut down `usbmuxd` if on Linux and you started it manually. To clean u
 To recover the space on the host PC, change directories into the repo, remove the built symlinks (removing just the installer will recover almost all the space), then run the garbage collector:
 
 ```
-nixos-apple-silicon$ rm m1n1 u-boot installer result
+nixos-apple-silicon$ rm u-boot installer result
 nixos-apple-silicon$ nix-collect-garbage
 ```
 
