@@ -17,10 +17,10 @@ jobs:
       max-parallel: 1
       matrix:
         nixpkgs-override:
-          - ""
-          - "--override-input nixpkgs nixpkgs/nixos-unstable"
-          - "--override-input nixpkgs nixpkgs/nixos-unstable-small"
-          - "--override-input nixpkgs nixpkgs/master"
+          - "--argstr nixos-release nixos-unstable"
+          - "--argstr nixos-release nixos-unstable-small"
+          - "--argstr nixos-release nixos-stable"
+          - "--argstr nixos-release nixpkgs"
         event_name:
           - "${{ github.event_name }}"
         exclude:
@@ -36,7 +36,6 @@ jobs:
       uses: cachix/install-nix-action@v31
       with:
         extra_nix_config: |
-          experimental-features = nix-command flakes
           access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
     - uses: cachix/cachix-action@v16
       with:
@@ -45,11 +44,8 @@ jobs:
         signingKey: "${{ secrets.CACHIX_SIGNING_KEY }}"
     - name: Build nix packages
       run: |
-        nix run nixpkgs#nix-fast-build -- \
-          --no-nom --skip-cached \
-          -f .#packages \
-          ${{ matrix.nixpkgs-override }} \
-          ${{ matrix.nixpkgs-override != '' && '|| echo "::warning ::Build failed"' || '' }}
+        nix-shell -p npins --run "npins update"
+        nix-shell -p nix-eval-jobs --run "nix-eval-jobs ${{ matrix.nixpkgs-override }} --force-recurse default.nix
 
   # Also populate the cache for cross-compilation from x86_64 case
   # Do this as a separate matrix job, so that the max-parallel applies per architecture

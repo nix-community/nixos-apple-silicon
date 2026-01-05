@@ -73,7 +73,7 @@ In the default installation, m1n1 loads U-Boot and U-Boot is used to set up a st
 Use Nix to build U-Boot along with m1n1 and the device trees:
 
 ```
-nixos-apple-silicon$ nix build --extra-experimental-features 'nix-command flakes' .#uboot-asahi -o u-boot
+nixos-apple-silicon$ nix-build -A packages.uboot-asahi -o u-boot
 ```
 
 The `.bin` file with m1n1, the device trees, and U-Boot joined together is now in `u-boot/`.
@@ -82,10 +82,10 @@ The `.bin` file with m1n1, the device trees, and U-Boot joined together is now i
 
 The bootstrap NixOS installer ISO contains UEFI-compatible GRUB, the Asahi Linux kernel, its initrd, and enough packages and drivers to allow connection to the Internet in order to download and install a full NixOS system.
 
-Building the image requires downloading of a large amount of data and compilation of a number of packages, including the kernel. On my six core Xeon laptop, building it took about 11 minutes (90 CPU minutes). Your mileage may vary. You can use the `-j` option to specify the number of packages to build in parallel. Each is allowed to use all cores, but for this build, most do not use more than one. Therefore, it is recommended to set it to less than the number of physical cores in your machine. You can also use the `-L` option to view detailed build logs.
+Building the image requires downloading of a large amount of data and compilation of a number of packages, including the kernel. On my six core Xeon laptop, building it took about 11 minutes (90 CPU minutes). Your mileage may vary. You can use the `-j` option to specify the number of packages to build in parallel. Each is allowed to use all cores, but for this build, most do not use more than one. Therefore, it is recommended to set it to less than the number of physical cores in your machine.
 
 ```
-nixos-apple-silicon$ nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap -o installer -j4 -L
+nixos-apple-silicon$ nix-build -j4 --log-format bar-with-logs -A installer-bootstrap -o installer
 ```
 
 The installer ISO is now available as `installer/iso/nixos-*.iso`. Use `dd` or similar to transfer it to your USB flash drive. Programs like `unetbootin` are not supported.

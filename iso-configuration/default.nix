@@ -1,30 +1,21 @@
-# configuration that is specific to the ISO
 {
-  config,
+  self,
+  system,
   pkgs,
-  lib,
-  ...
 }:
-{
-  imports = [
+import (pkgs.path + "/nixos/lib/eval-config.nix") {
+  inherit system;
+  specialArgs = {
+    modulesPath = pkgs.path + "/nixos/modules";
+  };
+  modules = [
+    self.nixosModules.apple-silicon-support
     ./installer-configuration.nix
-    ../apple-silicon-support
+    {
+      hardware.asahi.pkgsSystem = system;
+      nixpkgs.hostPlatform.system = "aarch64-linux";
+      nixpkgs.buildPlatform.system = system;
+      nixpkgs.overlays = [ self.overlays.apple-silicon-overlay ];
+    }
   ];
-
-  # include those modules so the user can rebuild the install iso. that's not
-  # especially useful at this point, but the user will need the apple-silicon-support
-  # directory for their own config.
-  installer.cloneConfigIncludes = [
-    "./installer-configuration.nix"
-    "./apple-silicon-support"
-  ];
-
-  # copy the apple-silicon-support and installer configs into the iso
-  boot.postBootCommands = lib.optionalString config.installer.cloneConfig ''
-    if ! [ -e /etc/nixos/apple-silicon-support ]; then
-      mkdir -p /etc/nixos
-      cp ${./installer-configuration.nix} /etc/nixos/installer-configuration.nix
-      cp -r ${../apple-silicon-support} /etc/nixos/apple-silicon-support
-    fi
-  '';
 }
