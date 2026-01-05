@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-compat.url = "github:nix-community/flake-compat";
   };
 
   outputs =
