@@ -2,7 +2,7 @@
   description = "Apple Silicon support for NixOS";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     flake-compat.url = "github:nix-community/flake-compat";
   };
 
