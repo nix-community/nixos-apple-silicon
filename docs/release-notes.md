@@ -2,6 +2,115 @@
 
 This file contains important information for each release.
 
+## 2025-11-18
+
+This release drops every custom package except the kernel and U-Boot. These
+cannot be dropped due to upstream nixpkgs' policy of not accepting any more
+custom versions of these packages. Many thanks to contributors who worked in
+this repository and with nixpkgs to achieve this goal.
+
+The kernel build is now also a full NixOS kernel build, enabling every module.
+This means no more issues with hardware support and a more standard experience.
+This does, however, increase build times, but CI and a public cache (courtesy of
+nix-community and Cachix) have been set up to alleviate this.
+
+Installer images are now built for ARM by default using public GitHub Actions
+runners.
+
+## 2025-08-23
+
+This release drops our custom Mesa override, which fixes a build issue with
+recent nixpkgs.
+
+Since mesa 25.1, support for asahi is enabled by default.
+This means, the nixpkgs mesa is sufficient and we don't need any custom mesa,
+or methods to replace it.
+
+In addition to the now ineffective
+`hardware.asahi.useExperimentalGPUDriver` option, this also removes the
+`hardware.asahi.experimentalGPUInstallMode` option, which was already
+deprecated before.
+
+This release also updates nixpkgs and corrects another issue building the kernel
+with Rust support. Thanks to dramforever and K900 for the fix.
+
+## 2025-08-10
+
+This release updates nixpkgs.
+
+Rust support is now the default in the kernel (even in the installer). This
+release also fixes a build issue with asahi-fwextract.
+
+As of this release, the release model is now documented [here](https://github.com/nix-community/nixos-apple-silicon/blob/main/docs/release-process.md). Development
+is now shifting directly to the main branch instead of discrete tagged releases.
+
+## 2025-05-30
+
+This release updates nixpkgs and the kernel.
+
+Updating nixpkgs brings us past the 25.05 release and on the path to 25.11.
+
+This release also fixes a build issue with Mesa on recent nixpkgs. Thanks
+to wistfulbrick for clues to this fix.
+
+As promised, the repositry has been moved to the nix-community organization. The
+old URL should redirect automatically but you may wish to update your
+configuration.
+
+## 2025-05-17
+
+This release updates nixpkgs, the kernel, and Mesa.
+
+The Mesa and kernel update stabilize the UAPI communication between them,
+allowing official Mesa releases in the future to be compatible with Apple
+Silicon. A reboot will be required after installation to restore graphics
+support.
+
+**Please see the issue on [the community tranistion of nixos-apple-silicon](https://github.com/tpwrules/nixos-apple-silicon/issues/298).**
+
+This repository will shortly be moving to the nix-community organization and
+gaining some more maintainership. The user experience should not majorly change
+but my personal involvement will slightly shift. Thanks for everything so far!
+
+## 2025-05-10
+
+This release updates nixpkgs, the kernel, and audio support components.
+
+Microphone support is now available for users using macOS firmare version 13.5
+(this is different to any other macOS install on the system). The current
+version can be checked with `cat /proc/device-tree/chosen/asahi,os-fw-version`.
+
+To upgrade it:
+* Take a backup of any macOS and Linux data you do not want to lose in case of
+  problems
+* Delete the macOS stub and EFI partitions ONLY, NOT the root partition
+  (more info avaiable in the guide's uninstallation section)
+* Reinstall the UEFI environment into the free space using the Asahi installer
+* Rerun the NixOS installer (more info available in the guide's rescue section)
+
+## 2025-04-27
+
+This release updates nixpkgs.
+
+This release fixes issues preventing Mesa from being used. Thanks to
+marcin-serwin and schphe for the fix.
+
+Another update with updated packages will follow shortly. Thanks for the
+patience.
+
+## 2025-03-15
+
+This release updates nixpkgs and the kernel.
+
+This release fixes build issues with the kernel and the latest nixpkgs. Thanks
+to flokli for info on the fix.
+
+## 2025-03-10
+
+This release updates nixpkgs and Mesa.
+
+This release fixes build issues with Mesa and the latest nixpkgs.
+
 ## 2025-02-03
 
 This release updates nixpkgs, m1n1, and the kernel.

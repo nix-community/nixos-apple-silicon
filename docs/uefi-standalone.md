@@ -1,14 +1,11 @@
-# UEFI Boot Standalone NixOS (2025-02-03)
+# UEFI Boot Standalone NixOS (2025-11-18)
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel version asahi-6.12.12-1
-* Asahi Linux's Mesa version 25.0.0_asahi-20241211-1
-* m1n1 version v1.4.21
-* Asahi Linux's U-Boot version 2024.10-1-asahi
-* Nixpkgs, as of 2025-02-01
-* macOS stub 12.3
+* Asahi Linux kernel version asahi-6.17.7-2
+* Nixpkgs, as of 2025-11-12
+* macOS stub 13.5
 
-NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-apple-silicon/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
+NOTE: The latest version of this guide will always be [at its home](https://github.com/nix-community/nixos-apple-silicon/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
 
 ## Introduction
 
@@ -46,14 +43,14 @@ The following items are required to get started:
 
 This setup takes advantage of the Nix package manager, which handles downloading and compiling everything. You must first install it on your Linux host PC if it doesn't run NixOS. Most distros are compatible, and installation (and uninstallation) is simple. Instructions are available on the [NixOS website](https://nixos.org/download.html#nix-quick-install).
 
-If you cannot or do not wish to install Nix and/or build these components yourself, installation ISOs are automatically built and made available from the [GitHub Releases page](https://github.com/tpwrules/nixos-apple-silicon/releases). Download the latest one, use `dd` or similar to transfer it to your USB flash drive, then skip down to the section on [UEFI Preparation](#uefi-preparation). Programs like `unetbootin` are not supported. These ISOs are fully reproducible; that is, the ISO you download will be (or should be...) bit-identical to the one you will get by following these preparation instructions.
+If you cannot or do not wish to install Nix and/or build these components yourself, installation ISOs are automatically built and made available from the [GitHub Releases page](https://github.com/nix-community/nixos-apple-silicon/releases). Download the latest one, use `dd` or similar to transfer it to your USB flash drive, then skip down to the section on [UEFI Preparation](#uefi-preparation). Programs like `unetbootin` are not supported. These ISOs are fully reproducible; that is, the ISO you download will be (or should be...) bit-identical to the one you will get by following these preparation instructions.
 
 #### nixos-apple-silicon
 
 Clone this repository to a suitable location on the host PC. In the future, you can update this repository using `git pull` and re-run the `nix build` commands to update things.
 
 ```
-$ git clone https://github.com/tpwrules/nixos-apple-silicon/
+$ git clone https://github.com/nix-community/nixos-apple-silicon/
 $ cd nixos-apple-silicon
 ```
 
@@ -61,13 +58,26 @@ $ cd nixos-apple-silicon
 
 The Asahi Linux project has developed m1n1 as a bridge between Apple's boot firmware and the Linux world. m1n1 is installed as a faux macOS kernel into a stub macOS installation. In addition to booting Linux (or U-Boot), m1n1 also sets up the hardware and allows remote control and debugging over USB.
 
-Change directories to the repository, then use Nix to build m1n1 and symlink the result to `m1n1`:
+##### Development Setup
+
+Generally, development of m1n1, U-Boot or the Linux kernel involves chainloading different payloads via the m1n1 proxyclient and optionally running them inside the m1n1 Hypervisor.
+
+This is described [in the Asahi Wiki m1n1 User Guide](https://asahilinux.org/docs/sw/m1n1-user-guide/). Since the stage 1 m1n1 is provided by the Asahi Installer, the same "Backdoor proxy mode in stage 1 release builds" and chainloading functionality work on a NixOS Apple Silicon install too.
+
+Building m1n1 from a source checkout and running the proxyclient on another NixOS machine (NixOS Apple Silicon or not), requires some extra setup. In your m1n1 checkout run the following:
 
 ```
-nixos-apple-silicon$ nix build --extra-experimental-features 'nix-command flakes' .#m1n1 -o m1n1
+$ nix-shell "<nixpkgs>" -A pkgsCross.aarch64-multiplatform.m1n1 # Get dependencies for compiling m1n1
+$ nix-shell -p python3Packages.{construct,pyserial} # Get dependencies for using proxyclient tools
+$ make ARCH=aarch64-unknown-linux-gnu- CHAINLOADING=1 [...]
 ```
 
-m1n1 has been built and the build products are now in `m1n1/build/`. You can also run m1n1's scripts such as `chainload.py` using a command like `m1n1/bin/m1n1-chainload`.
+To use some of the proxyclient features on on x86\_64, you'll need to adjust the cross-compilation prefix to match the targetPrefix used in Nixpkgs:
+
+Replace `aarch64-linux-gnu-` with `aarch64-unknown-linux-gnu-` in `proxyclient/m1n1/toolchain.py`.
+
+Now you should be able to use the tools as described in the documentation e.g. `M1N1DEVICE=/dev/tty[...] python3 proxyclient/tools/chainload.py -r build/m1n1.bin`.
+
 
 #### U-Boot
 
@@ -133,13 +143,13 @@ If everything went well, you will restart into U-Boot with the Asahi Linux and U
 
 Shut down the machine fully. Connect the flash drive with the installer ISO to a USB port. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
-Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `bootmenu` and select the `usb 0` entry. If this command is not available, instead use `env set boot_efi_bootmgr ; run bootcmd_usb0`. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine).
+Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `bootmenu` and select the `usb 0` entry. If no entries are available, exit and use `bootmenu -e` instead. If this command is not available, instead use `setenv boot_targets "usb" ; setenv bootmeths "efi" ; boot`. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine).
 
 <details>
   <summary>If "mounting `/dev/root` on `/mnt-root/iso` failed: No such file or directory" during boot…</summary>
   
   1. Was the ISO transferred to your flash drive correctly as described above? `dd` is the only correct way to do this. The ISO must be transferred to the drive block device itself, not a partition on the drive.
-  2. There is sometimes a [race condition](https://github.com/tpwrules/nixos-apple-silicon/issues/60) which causes booting to fail. Reboot the machine and try again.
+  2. There is sometimes a [race condition](https://github.com/nix-community/nixos-apple-silicon/issues/60) which causes booting to fail. Reboot the machine and try again.
   3. Some flash drives have quirks. Try a different drive, or use the following steps:
 
       1. Attempt to start the installer normally
@@ -263,6 +273,15 @@ networking.wireless.iwd = {
 };
 ```
 
+If you have a MacBook model that has a [touchbar](https://support.apple.com/guide/mac-help/use-the-touch-bar-mchlbfd5b039/mac), you will also have to add this to your configuration to ensure that graphical sessions render on the main display and not within the touchbar itself:
+
+```nix
+hardware.apple.touchBar = {
+  enable = true;
+  package = pkgs.tiny-dfr;
+};
+```
+
 #### NixOS Installation
 
 Once you are happy with your initial configuration, you may install the system. This will have to download a large amount of data.
@@ -283,6 +302,7 @@ Passphrase: <your passphrase>
 [iwd] exit
 ```
 
+If the installed NixOS version matches the version used by the installer (the default if not using flakes), and if the installer has not been cross-compiled (the default for official releases), the kernel will be copied over from the installer. Otherwise, the system will attempt to build the kernel in the installer environment which is generally not possible due to memory limitations. If the system will not install due to this, consider eenabling [the binary cache](https://github.com/nix-community/nixos-apple-silicon/blob/main/docs/binary-cache.md), changing nixpkgs versions temporarily, or building/downloading a native installer.
 
 Once the network is set up, ensure the time is set correctly, then install the system. You will be asked to set a root password as the final step:
 ```
@@ -309,31 +329,13 @@ When the system reboots, the bootloader will come up and boot the default config
 
 The machine is now set up to boot NixOS by default when turned on. To access the boot picker, turn off the machine, then hold the power button to turn the machine on instead of just pressing it. Let go once the options come up. To boot a particular OS once, click on it, then click Continue underneath it. To switch the default OS, click on the desired default, hold Option (Alt), then click Always Use underneath it.
 
-#### Hypervisor Boot
-
-By selecting the appropriate menu option in the Asahi Linux installer, you can also choose to install m1n1 without U-Boot and run U-Boot, the bootloader, and the OS under m1n1's hypervisor.
-
-To run U-Boot under the hypervisor, start m1n1 and attach the Mac to the host PC using an appropriate USB cable, change directories to the repo, then run:
-
-```
-nixos-apple-silicon$ m1n1/bin/m1n1-run_guest --raw u-boot/m1n1-u-boot.bin
-```
-
-To access the serial console, in a separate terminal run:
-
-```
-$ nix-shell -p picocom --run 'picocom /dev/ttyACM1'
-```
-
-Downloading the kernel over USB using m1n1 is not supported.
-
 ## Maintenance
 
 #### Rescue
 
 If something goes wrong and NixOS doesn't boot or is otherwise unusable, you can first try rolling back to a previous generation. Instead of selecting the default bootloader option, choose another configuration that worked previously.
 
-If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `bootmenu` and select the `usb 0` entry. If this command is not available, instead use `env set boot_efi_bootmgr ; run bootcmd_usb0`.
+If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `bootmenu` and select the `usb 0` entry. If no entries are available, exit and use `bootmenu -e` instead. If this command is not available, instead use `setenv boot_targets "usb" ; setenv bootmeths "efi" ; boot`.
 
 Once in the installer, you can re-mount your root partition and EFI system partition without reformatting them. Depending on what exactly went wrong, you might need to edit your configuration, copy over the latest Apple Silicon support module, or update U-Boot using the latest installer.
 
@@ -356,13 +358,13 @@ You may have to reboot after updating in some cases. If something goes wrong, yo
 
 #### Apple Silicon Support Updates
 
-To update the Apple Silicon support module, including the Asahi kernel, U-Boot, and m1n1, you can simply download newer files from this repo under `apple-silicon-support` and place them under `/etc/nixos/apple-silicon-support`. Any changes will require a configuration rebuild and reboot to take effect. If you wish to customize your kernel, you can edit the kernel config in `/etc/nixos/apple-silicon-support/kernel/config`. Consult the comments in `/etc/nixos/apple-silicon-support/kernel/default.nix` and `/etc/nixos/apple-silicon-support/kernel/package.nix` for more details. Note that if the kernel device trees change, U-Boot will need to be updated too.
+To update the Apple Silicon support module, including m1n1, the Asahi kernel and U-Boot, you can simply download newer files from this repo under `apple-silicon-support` and place them under `/etc/nixos/apple-silicon-support`. Any changes will require a configuration rebuild and reboot to take effect. If you wish to customize your kernel, you can edit the kernel config in `/etc/nixos/apple-silicon-support/kernel/config`. Consult the comments in `/etc/nixos/apple-silicon-support/kernel/default.nix` and `/etc/nixos/apple-silicon-support/kernel/package.nix` for more details. Note that if the kernel device trees change, U-Boot will need to be updated too.
 
 U-Boot and m1n1 are automatically managed by NixOS' bootloader system. If you roll back to a previous generation and things do not work properly due to a device tree incompatibility, you can run `/run/current-system/bin/switch-to-configuration switch` then reboot to force the bootloader and the correct version of U-Boot/m1n1 to be reinstalled and loaded.
 
 If you want the Apple Silicon support module to be upgraded in tandem with NixOS instead of manually downloading new files, you can add it as a channel with the following command:
 ```
-$ sudo nix-channel --add https://github.com/tpwrules/nixos-apple-silicon/archive/main.tar.gz apple-silicon-support
+$ sudo nix-channel --add https://github.com/nix-community/nixos-apple-silicon/archive/main.tar.gz apple-silicon-support
 ```
 
 Modify your `/etc/nixos/configuration.nix` to reference the channel instead of the local files:
@@ -434,7 +436,7 @@ Finally, shut down `usbmuxd` if on Linux and you started it manually. To clean u
 To recover the space on the host PC, change directories into the repo, remove the built symlinks (removing just the installer will recover almost all the space), then run the garbage collector:
 
 ```
-nixos-apple-silicon$ rm m1n1 u-boot installer result
+nixos-apple-silicon$ rm u-boot installer result
 nixos-apple-silicon$ nix-collect-garbage
 ```
 

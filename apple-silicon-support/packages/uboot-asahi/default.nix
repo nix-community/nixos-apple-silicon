@@ -1,8 +1,9 @@
-{ lib
-, fetchFromGitHub
-, buildUBoot
-, m1n1
-, appendConfig ? ""
+{
+  lib,
+  fetchFromGitHub,
+  buildUBoot,
+  m1n1,
+  appendConfig ? "",
 }:
 
 (buildUBoot rec {
@@ -10,10 +11,10 @@
     # tracking: https://pagure.io/fedora-asahi/uboot-tools/commits/main
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2024.10-1";
-    hash = "sha256-gtXt+BglBdEKW7j3U2x2QeKGeDH1FdmAMPXk+ntkROo=";
+    rev = "asahi-v2025.10-1";
+    hash = "sha256-mQCSh7zUvs3zhcAbdH/PNh1fGqpoj7mjUjLWfuPrBl4=";
   };
-  version = "2024.10-1-asahi";
+  version = "2025.10-1-asahi";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
@@ -31,17 +32,18 @@
 
     ${appendConfig}
   '';
-}).overrideAttrs (o: {
-  # nixos's downstream patches are not applicable
-  patches = [ 
-  ];
+}).overrideAttrs
+  (o: {
+    # nixos's downstream patches are not applicable
+    patches = [
+    ];
 
-  # DTC= flag somehow breaks DTC compilation so we remove it
-  makeFlags = builtins.filter (s: (!(lib.strings.hasPrefix "DTC=" s))) o.makeFlags;
+    # DTC= flag somehow breaks DTC compilation so we remove it
+    makeFlags = builtins.filter (s: (!(lib.strings.hasPrefix "DTC=" s))) o.makeFlags;
 
-  preInstall = ''
-    # compress so that m1n1 knows U-Boot's size and can find things after it
-    gzip -n u-boot-nodtb.bin
-    cat ${m1n1}/build/m1n1.bin arch/arm/dts/t[68]*.dtb u-boot-nodtb.bin.gz > m1n1-u-boot.bin
-  '';
-})
+    preInstall = ''
+      # compress so that m1n1 knows U-Boot's size and can find things after it
+      gzip -n u-boot-nodtb.bin
+      cat ${m1n1}/lib/m1n1/m1n1.bin arch/arm/dts/t[68]*.dtb u-boot-nodtb.bin.gz > m1n1-u-boot.bin
+    '';
+  })

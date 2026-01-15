@@ -1,12 +1,19 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   pkgs' = config.hardware.asahi.pkgs;
 
-  bootM1n1 = pkgs'.m1n1.override {
-    isRelease = true;
-    withTools = false;
-    customLogo = config.boot.m1n1CustomLogo;
-  };
+  bootM1n1 =
+    if (config.boot.m1n1CustomLogo != null) then
+      pkgs'.m1n1.override {
+        customLogo = config.boot.m1n1CustomLogo;
+      }
+    else
+      pkgs'.m1n1;
 
   bootUBoot = pkgs'.uboot-asahi.override {
     m1n1 = bootM1n1;
@@ -14,23 +21,28 @@ let
   };
 
   bootFiles = {
-    "m1n1/boot.bin" = pkgs.runCommand "boot.bin" {} ''
-      cat ${bootM1n1}/build/m1n1.bin > $out
-      cat ${config.boot.kernelPackages.kernel}/dtbs/apple/*.dtb >> $out
-      cat ${bootUBoot}/u-boot-nodtb.bin.gz >> $out
+    "m1n1/boot.bin" = pkgs.runCommand "boot.bin" { } ''
+      cat ${bootM1n1}/lib/m1n1/m1n1.bin \
+          ${config.boot.kernelPackages.kernel}/dtbs/apple/*.dtb \
+          ${bootUBoot}/u-boot-nodtb.bin.gz \
+          > $out
       if [ -n "${config.boot.m1n1ExtraOptions}" ]; then
         echo '${config.boot.m1n1ExtraOptions}' >> $out
       fi
     '';
   };
-in {
+in
+{
   config = lib.mkIf config.hardware.asahi.enable {
     # install m1n1 with the boot loader
     boot.loader.grub.extraFiles = bootFiles;
     boot.loader.systemd-boot.extraFiles = bootFiles;
 
     # ensure the installer has m1n1 in the image
-    system.extraDependencies = lib.mkForce [ bootM1n1 bootUBoot ];
+    system.extraDependencies = lib.mkForce [
+      bootM1n1
+      bootUBoot
+    ];
     system.build.m1n1 = bootFiles."m1n1/boot.bin";
   };
 
