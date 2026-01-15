@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2026-xx-xx
+
+Among others, the kernel has been updated to 6.18.x, and `apple_dcp` was renamed
+to `appledrm`, so users specifying the `apple_dcp.show_notch=1` kernelparam need to
+change it to `appledrm.show_notch=1`.
+
+
 ## 2025-11-18
 
 This release drops every custom package except the kernel and U-Boot. These
