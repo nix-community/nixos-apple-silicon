@@ -109,6 +109,9 @@ This setup uses the alpha Asahi Linux installer to install a stub macOS and stan
 
 #### Asahi Linux Installation
 
+> [!IMPORTANT]
+> If you have previously performed this step with an older version of m1n1 and the UEFI environment, the latest NixOS Apple Silicon installer ISO may not boot correctly, and you may have to carefully re-create the partitions and re-install the latest version of the UEFI environment.
+
 Download and run the alpha installer with the following command:
 ```
 % curl https://alx.sh | sh
