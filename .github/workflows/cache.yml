@@ -53,11 +53,11 @@ jobs:
           ${{ matrix.nixpkgs-override }} \
           ${{ matrix.nixpkgs-override != '' && '|| echo "::warning ::Build failed"' || '' }}
 
-  packages-release-25.11:
+  packages-release-2511:
     if: github.ref == 'refs/heads/release-25.11'
     runs-on: namespace-profile-large-arm64
     continue-on-error: true
-    strategy: &strategy-release-25.11
+    strategy: &strategy-release-2511
       # avoid building things twice if nixos-unstable and master contain the same derivations
       max-parallel: 1
       matrix:
@@ -82,10 +82,10 @@ jobs:
     strategy: *strategy-main
     steps: *steps
   
-  packages-cross-release-25.11:
+  packages-cross-release-2511:
     if: github.ref == 'refs/heads/release-25.11'
     runs-on: namespace-profile-large-x86
     continue-on-error: true
-    strategy: *strategy-release-25.11
+    strategy: *strategy-release-2511
     steps: *steps
 
