@@ -4,15 +4,17 @@ on:
   push:
     branches:
       - 'main'
+      - 'release-25.11'
       - 'ci-test'
   schedule:
     - cron: "0 6 * * *"
 
 jobs:
-  packages:
+  packages-main:
+    if: github.ref == 'refs/heads/main'
     runs-on: namespace-profile-large-arm64
     continue-on-error: true
-    strategy: &strategy
+    strategy: &strategy-main
       # avoid building things twice if nixos-unstable and master contain the same derivations
       max-parallel: 1
       matrix:
@@ -51,10 +53,39 @@ jobs:
           ${{ matrix.nixpkgs-override }} \
           ${{ matrix.nixpkgs-override != '' && '|| echo "::warning ::Build failed"' || '' }}
 
+  packages-release-25.11:
+    if: github.ref == 'refs/heads/release-25.11'
+    runs-on: namespace-profile-large-arm64
+    continue-on-error: true
+    strategy: &strategy-release-25.11
+      # avoid building things twice if nixos-unstable and master contain the same derivations
+      max-parallel: 1
+      matrix:
+        nixpkgs-override:
+          - ""
+          - "--override-input nixpkgs nixpkgs/nixos-25.11"
+          - "--override-input nixpkgs nixpkgs/nixos-25.11-small"
+          - "--override-input nixpkgs nixpkgs/release-25.11"
+        event_name:
+          - "${{ github.event_name }}"
+        exclude:
+          - nixpkgs-override: ""
+            event_name: schedule
+    steps: *steps
+
   # Also populate the cache for cross-compilation from x86_64 case
   # Do this as a separate matrix job, so that the max-parallel applies per architecture
-  packages-cross:
+  packages-cross-main:
+    if: github.ref == 'refs/heads/main'
     runs-on: namespace-profile-large-x86
     continue-on-error: true
-    strategy: *strategy
+    strategy: *strategy-main
     steps: *steps
+  
+  packages-cross-release-25.11:
+    if: github.ref == 'refs/heads/release-25.11'
+    runs-on: namespace-profile-large-x86
+    continue-on-error: true
+    strategy: *strategy-release-25.11
+    steps: *steps
+
