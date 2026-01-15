@@ -25,12 +25,16 @@ jobs:
           - "--override-input nixpkgs nixpkgs/master"
         event_name:
           - "${{ github.event_name }}"
+        ref:
+          - "refs/heads/main"
         exclude:
           - nixpkgs-override: ""
             event_name: schedule
     steps: &steps
     - name: Checkout repository
       uses: actions/checkout@v6
+      with:
+        ref: "${{ matrix.ref }}"
     - uses: namespacelabs/nscloud-cache-action@v1
       with:
         path: ~/.cache/nix
@@ -68,6 +72,8 @@ jobs:
           - "--override-input nixpkgs nixpkgs/release-25.11"
         event_name:
           - "${{ github.event_name }}"
+        ref:
+          - "refs/heads/release-25.11"
         exclude:
           - nixpkgs-override: ""
             event_name: schedule
