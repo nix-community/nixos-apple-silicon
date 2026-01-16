@@ -15,6 +15,7 @@
 
 {
   imports = [
+    (modulesPath + "/profiles/base.nix")
     (modulesPath + "/profiles/minimal.nix")
     (modulesPath + "/profiles/installation-device.nix")
     (modulesPath + "/installer/cd-dvd/iso-image.nix")
@@ -69,14 +70,7 @@
 
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
-  environment.systemPackages = with pkgs; [
-    gptfdisk
-    parted
-    cryptsetup
-    curl
-    wget
-    wormhole-william
-  ];
+  environment.systemPackages = with pkgs; [ wormhole-william ];
 
   # save space and compilation time. might revise?
   hardware.enableAllFirmware = lib.mkForce false;
@@ -146,6 +140,11 @@
   boot.swraid.mdadmConf = ''
     PROGRAM ${pkgs.coreutils}/bin/true
   '';
+
+  # profiles/base.nix assumes the default LTS kernel, and thus enables ZFS.
+  # We do not use LTS kernel, thus disable ZFS to match latest-kernel specialisation
+  # and avoid breaking the installer image when ZFS does not build against our kernel.
+  boot.supportedFilesystems.zfs = false;
 
   # avoid error that flakes must be enabled when nixos-install uses <nixpkgs>
   nixpkgs.flake.setNixPath = false;
