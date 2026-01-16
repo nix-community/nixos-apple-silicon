@@ -58,7 +58,7 @@ jobs:
           ${{ matrix.nixpkgs-override != '' && '|| echo "::warning ::Build failed"' || '' }}
 
   packages-release-2511:
-    if: github.ref == 'refs/heads/release-25.11'
+    if: github.ref == 'refs/heads/release-25.11' || github.event_name == 'schedule'
     runs-on: namespace-profile-large-arm64
     continue-on-error: true
     strategy: &strategy-release-2511
@@ -89,7 +89,7 @@ jobs:
     steps: *steps
   
   packages-cross-release-2511:
-    if: github.ref == 'refs/heads/release-25.11'
+    if: github.ref == 'refs/heads/release-25.11' || github.event_name == 'schedule'
     runs-on: namespace-profile-large-x86
     continue-on-error: true
     strategy: *strategy-release-2511
