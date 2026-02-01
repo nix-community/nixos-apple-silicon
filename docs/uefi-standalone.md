@@ -5,7 +5,7 @@ This guide will build and was tested with the following software:
 * Nixpkgs, as of 2025-11-12
 * macOS stub 13.5
 
-NOTE: The latest version of this guide will always be [at its home](https://github.com/nix-community/nixos-apple-silicon/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
+NOTE: The latest version of this guide will always be [at its home](https://github.com/nix-community/nixos-apple-silicon/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [Asahi installer repo](https://github.com/AsahiLinux/asahi-installer?tab=readme-ov-file#asahi-linux-installer).
 
 ## Introduction
 
