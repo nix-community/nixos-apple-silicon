@@ -17,6 +17,7 @@ let
 
   bootUBoot = pkgs'.uboot-asahi.override {
     m1n1 = bootM1n1;
+    appendConfig = config.boot.ubootExtraConfig;
   };
 
   bootFiles = {
@@ -61,6 +62,15 @@ in
       default = null;
       description = ''
         Custom logo to build into m1n1. The path must point to a 256x256 PNG.
+      '';
+    };
+
+    ubootExtraConfig = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = ''
+        Append extra options to the u-boot build command. Useful for customizing
+        the u-boot binary for custom functionality.
       '';
     };
   };
