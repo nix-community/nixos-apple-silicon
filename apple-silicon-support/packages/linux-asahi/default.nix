@@ -11,6 +11,7 @@ let
       stdenv,
       lib,
       fetchFromGitHub,
+      fetchpatch,
       buildLinux,
       ...
     }:
@@ -53,6 +54,13 @@ let
             APPLE_PMGR_PWRSTATE = yes;
           };
           features.rust = true;
+        }
+        {
+          name = "Fix https://github.com/nix-community/nixos-apple-silicon/issues/422";
+          patch = fetchpatch {
+            url = "https://lore.kernel.org/asahi/20260205-asahi-iio-aop-cfg-v1-1-c83e3b00fd0e@kloenk.dev/raw";
+            hash = "sha256-XZloBRRe3Y1JoDxFuf4U5GZME8Y7tBG/xJ1VlqNcISk=";
+          };
         }
       ]
       ++ _kernelPatches;
