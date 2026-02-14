@@ -19,15 +19,15 @@ let
       inherit stdenv lib;
 
       pname = "linux-asahi";
-      version = "6.18.8";
+      version = "6.18.9";
       modDirVersion = version;
       extraMeta.branch = "6.18";
 
       src = fetchFromGitHub {
         owner = "AsahiLinux";
         repo = "linux";
-        tag = "asahi-6.18.8-1";
-        hash = "sha256-0GOtKHW9yIJjruwD13pEFDtqxy5oDefu09pZ6php9xU=";
+        tag = "asahi-6.18.9-1";
+        hash = "sha256-0YTfR8J7VFIfH9GiyxEC3Q1rBw7Jadq5d+qvS067w/o=";
       };
 
       kernelPatches = [
@@ -54,13 +54,6 @@ let
             APPLE_PMGR_PWRSTATE = yes;
           };
           features.rust = true;
-        }
-        {
-          name = "Fix https://github.com/nix-community/nixos-apple-silicon/issues/422";
-          patch = fetchpatch {
-            url = "https://lore.kernel.org/asahi/20260205-asahi-iio-aop-cfg-v1-1-c83e3b00fd0e@kloenk.dev/raw";
-            hash = "sha256-XZloBRRe3Y1JoDxFuf4U5GZME8Y7tBG/xJ1VlqNcISk=";
-          };
         }
       ]
       ++ _kernelPatches;
