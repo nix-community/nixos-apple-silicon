@@ -55,7 +55,7 @@ jobs:
           echo installer dest: "$INSTALLER_DEST"
           cp result/iso/*.iso "$INSTALLER_DEST"
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: installer
           path: ./*.iso
