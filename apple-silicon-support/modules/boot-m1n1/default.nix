@@ -36,6 +36,7 @@ in
     # install m1n1 with the boot loader
     boot.loader.grub.extraFiles = bootFiles;
     boot.loader.systemd-boot.extraFiles = bootFiles;
+    boot.loader.limine.additionalFiles = bootFiles;
 
     # ensure the installer has m1n1 in the image
     system.extraDependencies = lib.mkForce [
