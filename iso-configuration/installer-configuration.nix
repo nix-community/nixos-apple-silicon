@@ -85,8 +85,11 @@
   networking.wireless.iwd = {
     enable = true;
     settings.General.EnableNetworkConfiguration = true;
+    # NixOS by default uses resolvconf for DNS, but iwd's default is systemd-resolved. Make iwd use resolvconf
+    settings.Network.NameResolvingService = "resolvconf";
   };
-  networking.networkmanager.enable = lib.mkForce false;
+  # Make sure NetworkManager, also enabled by default, uses iwd for wifi
+  networking.networkmanager.wifi.backend = "iwd";
 
   # let user know to use iwctl to get access to iwd
   services.getty.helpLine = lib.mkForce ''
