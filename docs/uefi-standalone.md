@@ -270,10 +270,8 @@ Some keyboard layouts are not detected correctly. On some devices, the \` key is
 
 `iwd` is recommended for WiFi on most systems:
 ```nix
-networking.wireless.iwd = {
-  enable = true;
-  settings.General.EnableNetworkConfiguration = true;
-};
+# Implicitly disables wpa_supplicant
+networking.networkmanager.backend = "iwd";
 ```
 
 > [!TIP] Using iwd in your fully installed system
@@ -282,12 +280,6 @@ networking.wireless.iwd = {
 > ```nix
 > # Supports "resolvconf" and "systemd"
 > networking.wireless.iwd.settings.Network.NameResolvingService = "resolvconf";
-> ```
->
-> If you will be using NetworkManager:
-> ```nix
-> # Allows iwd to be configured by your desktop environment's settings program
-> networking.networkmanager.backend = "iwd";
 > ```
 
 If you have a MacBook model that has a [touchbar](https://support.apple.com/guide/mac-help/use-the-touch-bar-mchlbfd5b039/mac), you will also have to add this to your configuration to ensure that graphical sessions render on the main display and not within the touchbar itself:
