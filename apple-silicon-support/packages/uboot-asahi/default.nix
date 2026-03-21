@@ -10,8 +10,8 @@
     # tracking: https://pagure.io/fedora-asahi/uboot-tools/commits/main
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2025.10-1";
-    hash = "sha256-mQCSh7zUvs3zhcAbdH/PNh1fGqpoj7mjUjLWfuPrBl4=";
+    rev = "asahi-v2025.10-2";
+    hash = "sha256-zZt/4ptKymH9+dsBJXOA4jYJx+KvvUcMtuHOtedUTY4=";
   };
   version = "2025.10-1-asahi";
 
