@@ -76,9 +76,6 @@
     # U-Boot does not support EFI variables
     boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
 
-    # U-Boot does not support switching console mode
-    boot.loader.systemd-boot.consoleMode = "0";
-
     # GRUB has to be installed as removable if the user chooses to use it
     boot.loader.grub = lib.mkDefault {
       efiSupport = true;
