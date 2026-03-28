@@ -1,27 +1,25 @@
-{
-  lib,
-  callPackage,
-  linuxPackagesFor,
-  _kernelPatches ? [ ],
+{ lib
+, callPackage
+, linuxPackagesFor
+, _kernelPatches ? [ ]
+,
 }:
 
 let
   linux-asahi-fairydust-pkg =
-    {
-      stdenv,
-      lib,
-      fetchFromGitHub,
-      fetchpatch,
-      buildLinux,
-      ...
+    { stdenv
+    , lib
+    , fetchFromGitHub
+    , fetchpatch
+    , buildLinux
+    , ...
     }:
     buildLinux rec {
       inherit stdenv lib;
 
       pname = "linux-asahi-fairydust";
-      # Use commit hash for experimental branch tracking
       version = "6.18.10-fairydust-61b6e71";
-      modDirVersion = "6.18.10";
+      modDirVersion = "6.18.10-fairydust";
       extraMeta.branch = "6.18";
 
       src = fetchFromGitHub {
