@@ -19,7 +19,7 @@ let
 
       pname = "linux-asahi-fairydust";
       version = "6.18.10-fairydust-61b6e71";
-      modDirVersion = "6.18.10-fairydust";
+      modDirVersion = "6.18.10";
       extraMeta.branch = "6.18";
 
       src = fetchFromGitHub {
