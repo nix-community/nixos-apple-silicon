@@ -18,17 +18,17 @@ let
       inherit stdenv lib;
 
       pname = "linux-asahi-fairydust";
-      version = "6.18.10-fairydust-61b6e71";
-      modDirVersion = "6.18.10";
-      extraMeta.branch = "6.18";
+      version = "6.19.11-fairydust-61b6e71";
+      modDirVersion = "6.19.11";
+      extraMeta.branch = "6.19";
 
       src = fetchFromGitHub {
         owner = "AsahiLinux";
         repo = "linux";
         # Pinned to tested commit from fairydust branch
         # This branch adds experimental DP-ALT mode support
-        rev = "61b6e714dd19b7bee1c0e6ec4234199e640c2932";
-        hash = "sha256-5eAgJTKcRdjEFzHDSrh/XReaT6Db9YN2RN1SwOs28NE=";
+        rev = "4e84610e5722c34e48fef3f33f7bd8faedb13348";
+        hash = "sha256-0000000000000000000000000000000000000000000=";
       };
 
       kernelPatches = [
