@@ -28,7 +28,7 @@ let
         # Pinned to tested commit from fairydust branch
         # This branch adds experimental DP-ALT mode support
         rev = "4e84610e5722c34e48fef3f33f7bd8faedb13348";
-        hash = "sha256-0000000000000000000000000000000000000000000=";
+        hash = "sha256-G32SzJW1paAUaBCnw5cou20WwpuVR8OZSDRpV58IUJU=";
       };
 
       kernelPatches = [
