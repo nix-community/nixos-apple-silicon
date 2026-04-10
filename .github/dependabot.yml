@@ -11,3 +11,7 @@ updates:
           - "*"  # Group all Actions updates into a single larger pull request
     schedule:
       interval: weekly
+  - package-ecosystem: "nix"
+    directory: "/"
+    schedule:
+      interval: "weekly"
