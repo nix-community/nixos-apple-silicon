@@ -90,11 +90,6 @@
   # and it is harder to use and less mainained than iwd in general
   networking.networkmanager.wifi.backend = "iwd";
 
-  networking.wireless.iwd = {
-    # NixOS by default uses resolvconf for DNS, but iwd's default is systemd-resolved. Make iwd use resolvconf
-    settings.Network.NameResolvingService = "resolvconf";
-  };
-
   nixpkgs.overlays =
     lib.optionals (config.nixpkgs.hostPlatform.system != config.nixpkgs.buildPlatform.system)
       [
