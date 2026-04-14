@@ -270,7 +270,7 @@ Some keyboard layouts are not detected correctly. On some devices, the \` key is
 
 `iwd` is recommended for WiFi on most systems:
 ```nix
-# Implicitly disables wpa_supplicant
+# Implicitly enables IWD and disables wpa_supplicant
 networking.networkmanager.backend = "iwd";
 ```
 
