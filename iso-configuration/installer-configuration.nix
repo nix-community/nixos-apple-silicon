@@ -79,25 +79,10 @@
   hardware.asahi.setupAsahiSound = false;
   system.extraDependencies = lib.mkForce [ ];
 
-  # Disable wpa_supplicant because it can't use WPA3-SAE on broadcom chips that are used on macs and it is harder to use and less mainained than iwd in general
-  networking.wireless.enable = false;
-  # Enable iwd
-  networking.wireless.iwd = {
-    enable = true;
-    settings.General.EnableNetworkConfiguration = true;
-  };
-  networking.networkmanager.enable = lib.mkForce false;
-
-  # let user know to use iwctl to get access to iwd
-  services.getty.helpLine = lib.mkForce ''
-    The "nixos" and "root" accounts have empty passwords.
-
-    To log in over ssh you must set a password for either "nixos" or "root"
-    with `passwd` (prefix with `sudo` for "root"), or add your public key to
-    /home/nixos/.ssh/authorized_keys or /root/.ssh/authorized_keys.
-
-    To set up a wireless connection, run `iwctl`.
-  '';
+  # Enable iwd and make NetworkManager, enabled by default, use iwd for wifi
+  # We use iwd instead of wpa_supplicant because it can't use WPA3-SAE on broadcom chips that are used on macs,
+  # and it is harder to use and less mainained than iwd in general
+  networking.networkmanager.wifi.backend = "iwd";
 
   nixpkgs.overlays =
     lib.optionals (config.nixpkgs.hostPlatform.system != config.nixpkgs.buildPlatform.system)
