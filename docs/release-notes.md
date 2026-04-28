@@ -8,6 +8,36 @@ Among others, the kernel has been updated to 6.18.x, and `apple_dcp` was renamed
 to `appledrm`, so users specifying the `apple_dcp.show_notch=1` kernelparam need to
 change it to `appledrm.show_notch=1`.
 
+### Peripheral firmware loading changes
+
+Peripheral firmware (required for Wi-Fi, Bluetooth, etc.) is now loaded from
+the EFI System Partition at boot time by default, rather than being extracted
+into the Nix store at evaluation time. This aligns with the approach used by
+Fedora Asahi Linux.
+
+- `hardware.asahi.extractPeripheralFirmware` now defaults to `false`.
+- `hardware.asahi.peripheralFirmwareDirectory` now defaults to `null` and
+  must be explicitly set when eval-time extraction is enabled. It is ignored
+  when boot-time firmware loading is used (the default).
+
+**Action required for existing installations:**
+- If your ESP already has the `vendorfw/firmware.cpio` format (Asahi installer
+  0.8.0+), no configuration change is needed. Firmware will be discovered
+  automatically on the next boot.
+- If you have an older installation with the legacy `asahi/all_firmware.tar.gz`
+  format, you must either:
+  1. Re-run the Asahi Linux installer to update the ESP firmware to the new
+     `vendorfw` format (recommended), or
+  2. Explicitly set `hardware.asahi.extractPeripheralFirmware = true` and point
+     `hardware.asahi.peripheralFirmwareDirectory` at the directory containing
+     your legacy firmware files (e.g. `/boot/asahi`).
+
+Users who prefer declarative/offline firmware management can still opt into
+eval-time extraction by setting `hardware.asahi.extractPeripheralFirmware = true`
+and pointing `hardware.asahi.peripheralFirmwareDirectory` at a local copy of
+the firmware. Both the modern `firmware.cpio` format (copy it from
+`/boot/vendorfw`) and the legacy `all_firmware.tar.gz` format are supported.
+
 
 ## 2025-11-18
 

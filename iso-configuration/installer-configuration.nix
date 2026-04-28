@@ -53,14 +53,32 @@
       mkdir -p /tmp/.fwsetup/{esp,extracted}
 
       mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /tmp/.fwsetup/esp
-      ${asahi-fwextract}/bin/asahi-fwextract /tmp/.fwsetup/esp/asahi /tmp/.fwsetup/extracted
-      umount /tmp/.fwsetup/esp
 
-      pushd /tmp/.fwsetup/
-      cat /tmp/.fwsetup/extracted/firmware.cpio | ${pkgs.cpio}/bin/cpio -id --quiet --no-absolute-filenames
-      mkdir -p /lib/firmware
-      mv vendorfw/* /lib/firmware
-      popd
+      if [ -f /tmp/.fwsetup/esp/vendorfw/firmware.cpio ]; then
+        cpio_src=/tmp/.fwsetup/esp/vendorfw/firmware.cpio
+
+      elif [ -d /tmp/.fwsetup/esp/asahi ] && [ -f /tmp/.fwsetup/esp/asahi/all_firmware.tar.gz ]; then
+        ${asahi-fwextract}/bin/asahi-fwextract /tmp/.fwsetup/esp/asahi /tmp/.fwsetup/extracted
+        cpio_src=/tmp/.fwsetup/extracted/firmware.cpio
+
+      else
+        echo "Warning: No Asahi firmware found in ESP. Wi-Fi and ALS may not work."
+        cpio_src=
+      fi
+
+      if [ -n "$cpio_src" ]; then
+        pushd /tmp/.fwsetup/
+        cat "$cpio_src" | ${pkgs.cpio}/bin/cpio -id --quiet --no-absolute-filenames
+        mkdir -p /lib/firmware
+        if [ -d vendorfw ]; then
+          cp -a vendorfw/. /lib/firmware
+        else
+          echo "Warning: firmware archive did not contain vendorfw/ directory"
+        fi
+        popd
+      fi
+
+      umount /tmp/.fwsetup/esp
       rm -rf /tmp/.fwsetup
     '';
 
