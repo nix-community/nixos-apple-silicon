@@ -58,6 +58,7 @@
             ;
 
           linux-asahi = pkgs.linux-asahi.kernel;
+          linux-asahi-fairydust = pkgs.linux-asahi-fairydust.kernel;
 
           installer-bootstrap =
             let
