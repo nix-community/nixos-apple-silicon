@@ -247,16 +247,14 @@ Various non-free non-redistributable peripheral firmware files are required to u
 
 By default, the Apple Silicon support module now loads peripheral firmware from the ESP at boot time (before any drivers that need it are loaded). This matches the approach used by Fedora Asahi Linux and means the firmware is not imported into the Nix store at evaluation time. It also means there should be no need for any manual firmware management, as in case any more firmware needs to be collected, the Asahi Installer will do it for us, as it does for Fedora.
 
-If you prefer to manage firmware declaratively in your Nix configuration rather than reading from the ESP at boot time, enable eval-time extraction and specify the path manually:
+If you prefer to manage firmware declaratively in your Nix configuration rather than reading from the ESP at boot time, set the firmware path:
 ```
-  # Enable eval-time extraction and specify the path.
-  hardware.asahi.extractPeripheralFirmware = true;
   hardware.asahi.peripheralFirmwareDirectory = ./firmware;
 ```
 
-Both `firmware.cpio` (from `/boot/vendorfw` on a modern installation) and the legacy `all_firmware.tar.gz` format are supported for eval-time extraction. Place the firmware file(s) in the referenced directory.
+Both `firmware.cpio` (from `/boot/vendorfw` on a modern installation) and the legacy `all_firmware.tar.gz` format are supported for eval-time extraction. Point the path to a location where either of the two files reside.
 
-Keep in mind that if also using flakes, the referenced path can't be outside your flake.
+Keep in mind that if also using flakes, the referenced path can't be outside your flake, so you will need to copy them in.
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 ```

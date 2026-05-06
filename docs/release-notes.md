@@ -15,28 +15,35 @@ the EFI System Partition at boot time by default, rather than being extracted
 into the Nix store at evaluation time. This aligns with the approach used by
 Fedora Asahi Linux.
 
-- `hardware.asahi.extractPeripheralFirmware` now defaults to `false`.
-- `hardware.asahi.peripheralFirmwareDirectory` now defaults to `null` and
-  must be explicitly set when eval-time extraction is enabled. It is ignored
-  when boot-time firmware loading is used (the default).
+- `hardware.asahi.peripheralFirmwareDirectory` now defaults to `null`.
+  When unset (the default), firmware is loaded from the ESP at boot time.
+  This is the recommended approach.
+- The `hardware.asahi.extractPeripheralFirmware` option has been removed.
+  To use eval-time extraction instead (e.g. for declarative or offline
+  firmware management), set `hardware.asahi.peripheralFirmwareDirectory`
+  to a path containing `firmware.cpio` or `all_firmware.tar.gz`.
 
 **Action required for existing installations:**
-- If your ESP already has the `vendorfw/firmware.cpio` format (Asahi installer
-  0.8.0+), no configuration change is needed. Firmware will be discovered
-  automatically on the next boot.
-- If you have an older installation with the legacy `asahi/all_firmware.tar.gz`
-  format, you must either:
-  1. Re-run the Asahi Linux installer to update the ESP firmware to the new
-     `vendorfw` format (recommended), or
-  2. Explicitly set `hardware.asahi.extractPeripheralFirmware = true` and point
-     `hardware.asahi.peripheralFirmwareDirectory` at the directory containing
-     your legacy firmware files (e.g. `/boot/asahi`).
 
-Users who prefer declarative/offline firmware management can still opt into
-eval-time extraction by setting `hardware.asahi.extractPeripheralFirmware = true`
-and pointing `hardware.asahi.peripheralFirmwareDirectory` at a local copy of
-the firmware. Both the modern `firmware.cpio` format (copy it from
-`/boot/vendorfw`) and the legacy `all_firmware.tar.gz` format are supported.
+- If your ESP already contains `vendorfw/firmware.cpio` (Asahi installer 0.8.0+),
+  no configuration change is needed.
+
+- If you explicitly set `hardware.asahi.peripheralFirmwareDirectory`,
+  no change is required. Consider switching to boot-time loading,
+  which is now the recommended default.
+
+
+- If you were relying on the previous default to extract legacy firmware
+  (e.g. from `/boot/asahi`), you must take action because boot-time loading
+  does not support the legacy `asahi/all_firmware.tar.gz` format. Either:
+  1. Rebuild your vendor firmware package to switch to boot-time
+     loading (recommended), or
+  2. Explicitly set `hardware.asahi.peripheralFirmwareDirectory` to your
+     legacy firmware directory to continue using eval-time extraction.
+
+To rebuild the vendor firmware package on your ESP, run the Asahi installer
+(`curl https://alx.sh/ | sh`) from macOS recovery and choose
+**"Rebuild vendor firmware package"** when prompted.
 
 
 ## 2025-11-18

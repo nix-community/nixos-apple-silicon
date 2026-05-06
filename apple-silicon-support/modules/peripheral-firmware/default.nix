@@ -8,23 +8,10 @@
 let
   cfg = config.hardware.asahi;
 
-  # Script to extract Asahi firmware
-  # during boot
+  # Script to extract Asahi firmware during boot
   extractAsahiFirmwareInitrdScript = pkgs.writeShellScript "asahi-firmware-extract-initrd" ''
     set -u
     mkdir -p /run/asahi-firmware
-
-    # m1n1 may stage vendor firmware directly into the initramfs as /vendorfw.
-    # When that happens, skip ESP discovery and use it directly.
-    if [ -d /vendorfw ] && [ -n "$(ls -A /vendorfw 2>/dev/null)" ]; then
-      echo "Bootloader-staged vendor firmware found in /vendorfw"
-      cp -a /vendorfw/. /run/asahi-firmware/
-      if [ -f /sys/module/firmware_class/parameters/path ]; then
-        echo -n "/run/asahi-firmware" > /sys/module/firmware_class/parameters/path
-        echo "Registered /run/asahi-firmware as kernel firmware search path"
-      fi
-      exit 0
-    fi
 
     esp_partuuid=""
     read -r -d ''' esp_partuuid < /proc/device-tree/chosen/asahi,efi-system-partition 2>/dev/null || true
@@ -109,13 +96,12 @@ let
   # at eval time (not boot-time)
   extractAsahiFirmwareAtEval =
     let
-      pkgs' = cfg.pkgs;
       firmwareDir = cfg.peripheralFirmwareDirectory;
     in
     pkgs.runCommand "asahi-peripheral-firmware"
       {
         nativeBuildInputs = [
-          pkgs'.asahi-fwextract
+          cfg.pkgs.asahi-fwextract
           pkgs.cpio
         ];
       }
@@ -141,27 +127,24 @@ let
       '';
 in
 {
+  imports = [
+    (lib.mkRemovedOptionModule [ "hardware" "asahi" "extractPeripheralFirmware" ] ''
+      Eval-time firmware extraction is now enabled by setting
+      `hardware.asahi.peripheralFirmwareDirectory` to a path.
+      Leave it as `null` (the default) to load firmware from
+      the ESP at boot time (recommended).
+    '')
+  ];
+
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
-        assertions = [
-          {
-            assertion = !cfg.extractPeripheralFirmware || cfg.peripheralFirmwareDirectory != null;
-            message = ''
-              Asahi peripheral firmware extraction is enabled but the firmware
-              location appears incorrect.
-            '';
-          }
-        ];
-      }
-
-      (lib.mkIf cfg.extractPeripheralFirmware {
         hardware.firmware = lib.mkIf (cfg.peripheralFirmwareDirectory != null) [
           extractAsahiFirmwareAtEval
         ];
-      })
+      }
 
-      (lib.mkIf (!cfg.extractPeripheralFirmware) {
+      (lib.mkIf (cfg.peripheralFirmwareDirectory == null) {
         # vfat + codepage modules for ESP mounting in initrd
         boot.initrd.availableKernelModules = [
           "vfat"
@@ -208,38 +191,24 @@ in
     ]
   );
 
-  options.hardware.asahi = {
-    extractPeripheralFirmware = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        When enabled, extract the non-free non-redistributable
-        Asahi peripheral firmware into the Nix store at evaluation time.
+  options.hardware.asahi.peripheralFirmwareDirectory = lib.mkOption {
+    type = lib.types.nullOr lib.types.path;
 
-        Enable this if you are using the legacy <filename>asahi/all_firmware.tar.gz</filename>
-        format or want declarative/offline firmware management.
+    default = null;
 
-        The default (disabled) loads firmware from the ESP at boot time, which
-        is the recommended approach and matches upstream Fedora Asahi Linux.
-      '';
-    };
+    description = ''
+      Path to a directory containing non-free non-redistributable Asahi
+      peripheral firmware (required for Wi-Fi, Bluetooth, etc.).
 
-    peripheralFirmwareDirectory = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
+      When set to a path, the firmware is extracted from that directory into
+      the Nix store at evaluation time. Both <filename>firmware.cpio</filename>
+      (modern installer 0.8.0+) and <filename>all_firmware.tar.gz</filename>
+      (legacy) are supported. This is useful for users who want
+      declarative/offline firmware management.
 
-      default = null;
-
-      description = ''
-        Path to the directory containing the non-free non-redistributable
-        peripheral firmware necessary for features like Wi-Fi.
-
-        This option is only used when <option>extractPeripheralFirmware</option>
-        is enabled. When boot-time loading is used (the default), firmware is read
-        directly from the ESP and this option is ignored.
-
-        For declarative management, copy the firmware files elsewhere (like ./firmware) and
-        specify this path manually.
-      '';
-    };
+      When left as <literal>null</literal> (the default), firmware is loaded
+      directly from the EFI System Partition at boot time. This is the
+      recommended approach and matches upstream Fedora Asahi Linux.
+    '';
   };
 }

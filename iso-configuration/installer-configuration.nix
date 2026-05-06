@@ -35,56 +35,16 @@
   swapDevices = lib.mkOverride 60 [ ];
   fileSystems = lib.mkOverride 60 config.lib.isoFileSystems;
 
-  boot.postBootCommands =
-    let
-      inherit (config.hardware.asahi.pkgs) asahi-fwextract;
-    in
-    ''
-      for o in $(</proc/cmdline); do
-        case "$o" in
-          live.nixos.passwd=*)
-            set -- $(IFS==; echo $o)
-            echo "nixos:$2" | ${pkgs.shadow}/bin/chpasswd
-            ;;
-        esac
-      done
-
-      echo Extracting Asahi firmware...
-      mkdir -p /tmp/.fwsetup/{esp,extracted}
-
-      mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /tmp/.fwsetup/esp
-
-      if [ -f /tmp/.fwsetup/esp/vendorfw/firmware.cpio ]; then
-        cpio_src=/tmp/.fwsetup/esp/vendorfw/firmware.cpio
-
-      elif [ -d /tmp/.fwsetup/esp/asahi ] && [ -f /tmp/.fwsetup/esp/asahi/all_firmware.tar.gz ]; then
-        ${asahi-fwextract}/bin/asahi-fwextract /tmp/.fwsetup/esp/asahi /tmp/.fwsetup/extracted
-        cpio_src=/tmp/.fwsetup/extracted/firmware.cpio
-
-      else
-        echo "Warning: No Asahi firmware found in ESP. Wi-Fi and ALS may not work."
-        cpio_src=
-      fi
-
-      if [ -n "$cpio_src" ]; then
-        pushd /tmp/.fwsetup/
-        cat "$cpio_src" | ${pkgs.cpio}/bin/cpio -id --quiet --no-absolute-filenames
-        mkdir -p /lib/firmware
-        if [ -d vendorfw ]; then
-          cp -a vendorfw/. /lib/firmware
-        else
-          echo "Warning: firmware archive did not contain vendorfw/ directory"
-        fi
-        popd
-      fi
-
-      umount /tmp/.fwsetup/esp
-      rm -rf /tmp/.fwsetup
-    '';
-
-  # can't legally be incorporated into the installer image
-  # (and is automatically extracted at boot above)
-  hardware.asahi.extractPeripheralFirmware = false;
+  boot.postBootCommands = ''
+    for o in $(</proc/cmdline); do
+      case "$o" in
+        live.nixos.passwd=*)
+          set -- $(IFS==; echo $o)
+          echo "nixos:$2" | ${pkgs.shadow}/bin/chpasswd
+          ;;
+      esac
+    done
+  '';
 
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
