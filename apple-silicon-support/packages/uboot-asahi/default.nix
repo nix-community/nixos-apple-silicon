@@ -7,13 +7,12 @@
 
 (buildUBoot rec {
   src = fetchFromGitHub {
-    # tracking: https://pagure.io/fedora-asahi/uboot-tools/commits/main
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2025.10-2";
-    hash = "sha256-zZt/4ptKymH9+dsBJXOA4jYJx+KvvUcMtuHOtedUTY4=";
+    rev = "asahi-v2026.04-1";
+    hash = "sha256-RdcxvKZW2ms6pezBRNPyj/HTYQubpNX6r+nXqkV5oeo=";
   };
-  version = "2025.10-1-asahi";
+  version = "2026.04-1-asahi";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
