@@ -152,6 +152,9 @@ in
           "nls_iso8859-1"
         ];
 
+        boot.initrd.kernelModules = [ "overlay" ];
+        boot.kernelModules = [ "overlay" ];
+
         # Stage 1 systemd service: mount ESP, extract vendorfw, register firmware path.
         # The script and cpio binary must be present in the initrd.
         boot.initrd.systemd.storePaths = [
@@ -175,16 +178,25 @@ in
           };
         };
 
-        # NixOS's udev activation snippet (nixpkgs:
-        # nixos/modules/services/hardware/udev.nix, the firmware-loading-path
-        # block) unconditionally overwrites
-        # /sys/module/firmware_class/parameters/path with the Nix-store combined
-        # firmware directory. Re-point it at the initrd-extracted firmware so
-        # Wi-Fi/Bluetooth drivers find their blobs. Must run after "udevd" but
-        # before systemd-modules-load triggers driver binds.
-        system.activationScripts.asahi-firmware-path = lib.stringAfter [ "udevd" ] ''
+        # udev activation overwrites the firmware path with the NixOS combined
+        # directory, hiding the Asahi firmware extracted in initrd. Overlay
+        # both so user-declared firmware (hardware.firmware) remains available.
+        # Must run after udevd but before module loading.
+        system.activationScripts.asahi-firmware-path = lib.stringAfter [ "udevd" "modprobe" ] ''
           if [ -d /run/asahi-firmware ] && [ -e /sys/module/firmware_class/parameters/path ]; then
-            echo -n "/run/asahi-firmware" > /sys/module/firmware_class/parameters/path
+            nixos_fw=$(cat /sys/module/firmware_class/parameters/path)
+
+            umount -l /run/firmware-merged 2>/dev/null || true
+            mkdir -p /run/firmware-merged
+
+            # Asahi firmware takes precedence if both sources provide the same path.
+            if [ -n "$nixos_fw" ] && [ -d "$nixos_fw" ] && mount -t overlay overlay -o ro,lowerdir=/run/asahi-firmware:"$nixos_fw" /run/firmware-merged; then
+              echo -n "/run/firmware-merged" > /sys/module/firmware_class/parameters/path
+            else
+              # If overlay fails, keep built-in Wi-Fi/BT working with Asahi firmware.
+              echo "Warning: failed to merge Asahi and NixOS firmware; falling back to Asahi firmware only" >&2
+              echo -n "/run/asahi-firmware" > /sys/module/firmware_class/parameters/path
+            fi
           fi
         '';
       })
