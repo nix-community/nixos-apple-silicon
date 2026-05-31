@@ -18,10 +18,11 @@ Fedora Asahi Linux.
 - `hardware.asahi.peripheralFirmwareDirectory` now defaults to `null`.
   When unset (the default), firmware is loaded from the ESP at boot time.
   This is the recommended approach.
-- The `hardware.asahi.extractPeripheralFirmware` option has been removed.
-  To use eval-time extraction instead (e.g. for declarative or offline
+- To use eval-time extraction instead (e.g. for declarative or offline
   firmware management), set `hardware.asahi.peripheralFirmwareDirectory`
   to a path containing `firmware.cpio` or `all_firmware.tar.gz`.
+- Set `hardware.asahi.extractPeripheralFirmware = false` to disable all
+  automatic Asahi peripheral firmware loading.
 
 **Action required for existing installations:**
 
@@ -32,6 +33,8 @@ Fedora Asahi Linux.
   no change is required. Consider switching to boot-time loading,
   which is now the recommended default.
 
+- If you explicitly set `hardware.asahi.extractPeripheralFirmware = false`,
+  no change is required. Asahi peripheral firmware will not be loaded.
 
 - If you were relying on the previous default to extract legacy firmware
   (e.g. from `/boot/asahi`), you must take action because boot-time loading

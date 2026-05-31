@@ -256,6 +256,11 @@ Both `firmware.cpio` (from `/boot/vendorfw` on a modern installation) and the le
 
 Keep in mind that if also using flakes, the referenced path can't be outside your flake, so you will need to copy them in.
 
+If you want to use the Apple Silicon support module without loading Asahi peripheral firmware, set:
+```
+  hardware.asahi.extractPeripheralFirmware = false;
+```
+
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 ```
   # Enable the X11 windowing system.

@@ -127,24 +127,17 @@ let
       '';
 in
 {
-  imports = [
-    (lib.mkRemovedOptionModule [ "hardware" "asahi" "extractPeripheralFirmware" ] ''
-      Eval-time firmware extraction is now enabled by setting
-      `hardware.asahi.peripheralFirmwareDirectory` to a path.
-      Leave it as `null` (the default) to load firmware from
-      the ESP at boot time (recommended).
-    '')
-  ];
-
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
-        hardware.firmware = lib.mkIf (cfg.peripheralFirmwareDirectory != null) [
-          extractAsahiFirmwareAtEval
-        ];
+        hardware.firmware =
+          lib.mkIf (cfg.extractPeripheralFirmware && cfg.peripheralFirmwareDirectory != null)
+            [
+              extractAsahiFirmwareAtEval
+            ];
       }
 
-      (lib.mkIf (cfg.peripheralFirmwareDirectory == null) {
+      (lib.mkIf (cfg.extractPeripheralFirmware && cfg.peripheralFirmwareDirectory == null) {
         # vfat + codepage modules for ESP mounting in initrd
         boot.initrd.availableKernelModules = [
           "vfat"
@@ -203,24 +196,44 @@ in
     ]
   );
 
-  options.hardware.asahi.peripheralFirmwareDirectory = lib.mkOption {
-    type = lib.types.nullOr lib.types.path;
+  options.hardware.asahi = {
+    extractPeripheralFirmware = lib.mkOption {
+      type = lib.types.bool;
 
-    default = null;
+      default = true;
 
-    description = ''
-      Path to a directory containing non-free non-redistributable Asahi
-      peripheral firmware (required for Wi-Fi, Bluetooth, etc.).
+      description = ''
+        Whether to load non-free non-redistributable Asahi peripheral firmware
+        (required for Wi-Fi, Bluetooth, etc.).
 
-      When set to a path, the firmware is extracted from that directory into
-      the Nix store at evaluation time. Both <filename>firmware.cpio</filename>
-      (modern installer 0.8.0+) and <filename>all_firmware.tar.gz</filename>
-      (legacy) are supported. This is useful for users who want
-      declarative/offline firmware management.
+        When enabled, firmware is loaded from the EFI System Partition at boot
+        time by default, or from <option>hardware.asahi.peripheralFirmwareDirectory</option>
+        when set.
 
-      When left as <literal>null</literal> (the default), firmware is loaded
-      directly from the EFI System Partition at boot time. This is the
-      recommended approach and matches upstream Fedora Asahi Linux.
-    '';
+        Disable this if you want to use the Apple Silicon support module without
+        loading Asahi peripheral firmware.
+      '';
+    };
+
+    peripheralFirmwareDirectory = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+
+      default = null;
+
+      description = ''
+        Path to a directory containing non-free non-redistributable Asahi
+        peripheral firmware (required for Wi-Fi, Bluetooth, etc.).
+
+        When set to a path, the firmware is extracted from that directory into
+        the Nix store at evaluation time. Both <filename>firmware.cpio</filename>
+        (modern installer 0.8.0+) and <filename>all_firmware.tar.gz</filename>
+        (legacy) are supported. This is useful for users who want
+        declarative/offline firmware management.
+
+        When left as <literal>null</literal> (the default), firmware is loaded
+        directly from the EFI System Partition at boot time. This is the
+        recommended approach and matches upstream Fedora Asahi Linux.
+      '';
+    };
   };
 }
