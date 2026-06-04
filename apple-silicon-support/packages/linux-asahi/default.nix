@@ -26,8 +26,8 @@ let
       src = fetchFromGitHub {
         owner = "AsahiLinux";
         repo = "linux";
-        tag = "asahi-7.0.11-1";
-        hash = "sha256-x+3rH+/Kk9jZnP7bXqdJ3edX80rPdIlmAeqO2a/eZUQ=";
+        tag = "asahi-7.0.11-2";
+        hash = "sha256-IcaDCkgGIL1ApL1Uq75CJtKg3vwKEyFumih3h/SJYQQ=";
       };
 
       kernelPatches = [
