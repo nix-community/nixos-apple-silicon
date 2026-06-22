@@ -20,15 +20,15 @@ let
       inherit stdenv lib;
 
       pname = "linux-asahi-fairydust";
-      version = "7.0.12-fairydust-b94beb5";
-      modDirVersion = "7.0.12";
+      version = "7.0.13-fairydust-c839922";
+      modDirVersion = "7.0.13";
       extraMeta.branch = "7.0";
 
       src = fetchFromGitHub {
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "b94beb589e9b3b423afc459e70f5c73cd3602a82";
-        hash = "sha256-qGTRZIx7FE2OtFFo08uLzaYD41mf55askhy0a5v6CP0=";
+        rev = "c83992242bc1e38bfc861a91696534479a2dbdf4";
+        hash = "sha256-sGcgrrf/rpb8u9dvwiTFdNjp18UyuRhW94biH1WMO5I=";
       };
 
       kernelPatches = [
