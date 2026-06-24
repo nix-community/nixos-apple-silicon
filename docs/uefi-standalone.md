@@ -393,7 +393,7 @@ To make the Mac bootable again, you can use [idevicerestore](https://github.com/
 
 Please note that this procedure may require you to unrecoverably destroy all data on the Mac's internal drive. If erasing is necessary, you will be clearly warned and asked to confirm before it happens. The drive will end up zeroed and its encryption keys (probably) regenerated, so not even the NSA will be able to save you. If you haven't made backups, make peace with yourself now.
 
-To start the procedure, hook up the appropriate port on your unbootable Mac to the second computer and invoke DFU mode. This process is covered by Steps 1 and 2 of [Apple's documentation](https://support.apple.com/guide/apple-configurator-mac/revive-or-restore-a-mac-with-apple-silicon-apdd5f3c75ad/mac). We will first try what Apple calls a "revive" where the disk is not erased, although both we and `idevicerestore` still call it a "restore".
+To start the procedure, hook up the appropriate port on your unbootable Mac to the second computer and invoke DFU mode. This process is covered by Steps 1 and 2 of [Apple's documentation](https://support.apple.com/en-us/108900). We will first try what Apple calls a "revive" where the disk is not erased, although both we and `idevicerestore` still call it a "restore".
 
 If DFU mode was started correctly, the unbootable Mac will show up on your second computer as an `Apple, Inc. Mobile Device (DFU Mode)` in `lsusb` on Linux or System Information on macOS. If you see `Apple, Inc. Apple Mobile Device [Recovery Mode]` instead (or nothing), the procedure was not followed correctly and you need to try again.
 
