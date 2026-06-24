@@ -117,9 +117,6 @@
   # now but is slow and unnecessary
   security.polkit.enable = lib.mkForce false;
 
-  # bootspec generation is currently broken under cross-compilation
-  boot.bootspec.enable = false;
-
   # get rid of warning about non-ideal mdam config file
   # (we want to keep it enabled in case someone needs to use it)
   boot.swraid.mdadmConf = ''
