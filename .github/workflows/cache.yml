@@ -32,7 +32,7 @@ jobs:
             event_name: schedule
     steps: &steps
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         ref: "${{ matrix.ref }}"
     - uses: namespacelabs/nscloud-cache-action@v1
