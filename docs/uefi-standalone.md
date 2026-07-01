@@ -243,14 +243,22 @@ Add the `./apple-silicon-support` directory to the imports list and switch off t
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
-Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi. The Asahi Linux installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the Apple Silicon support module will automatically reference the files in the EFI system partition and incorporate them into your configuration to be managed by the normal NixOS mechanisms.
+Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi. The Asahi Linux installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation.
 
-Currently, the only supported way to update the peripheral firmware files is to destroy and re-create the EFI system partition, so they will not change unexpectedly. If you do not want the impurity of referencing them (or are using flakes where this is prohibited), copy them off the EFI system partition (e.g. on the installation ISO `mkdir -p /mnt/etc/nixos/firmware && cp /mnt/boot/asahi/{all_firmware.tar.gz,kernelcache*} /mnt/etc/nixos/firmware`) and specify this path in your configuration:
+By default, the Apple Silicon support module now loads peripheral firmware from the ESP at boot time (before any drivers that need it are loaded). This matches the approach used by Fedora Asahi Linux and means the firmware is not imported into the Nix store at evaluation time. It also means there should be no need for any manual firmware management, as in case any more firmware needs to be collected, the Asahi Installer will do it for us, as it does for Fedora.
+
+If you prefer to manage firmware declaratively in your Nix configuration rather than reading from the ESP at boot time, set the firmware path:
 ```
-  # Specify path to peripheral firmware files.
   hardware.asahi.peripheralFirmwareDirectory = ./firmware;
-  # Or disable extraction and management of them completely.
-  # hardware.asahi.extractPeripheralFirmware = false;
+```
+
+Both `firmware.cpio` (from `/boot/vendorfw` on a modern installation) and the legacy `all_firmware.tar.gz` format are supported for eval-time extraction. Point the path to a location where either of the two files reside.
+
+Keep in mind that if also using flakes, the referenced path can't be outside your flake, so you will need to copy them in.
+
+If you want to use the Apple Silicon support module without loading Asahi peripheral firmware, set:
+```
+  hardware.asahi.extractPeripheralFirmware = false;
 ```
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:

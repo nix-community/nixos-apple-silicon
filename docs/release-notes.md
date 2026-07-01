@@ -8,6 +8,46 @@ Among others, the kernel has been updated to 6.18.x, and `apple_dcp` was renamed
 to `appledrm`, so users specifying the `apple_dcp.show_notch=1` kernelparam need to
 change it to `appledrm.show_notch=1`.
 
+### Peripheral firmware loading changes
+
+Peripheral firmware (required for Wi-Fi, Bluetooth, etc.) is now loaded from
+the EFI System Partition at boot time by default, rather than being extracted
+into the Nix store at evaluation time. This aligns with the approach used by
+Fedora Asahi Linux.
+
+- `hardware.asahi.peripheralFirmwareDirectory` now defaults to `null`.
+  When unset (the default), firmware is loaded from the ESP at boot time.
+  This is the recommended approach.
+- To use eval-time extraction instead (e.g. for declarative or offline
+  firmware management), set `hardware.asahi.peripheralFirmwareDirectory`
+  to a path containing `firmware.cpio` or `all_firmware.tar.gz`.
+- Set `hardware.asahi.extractPeripheralFirmware = false` to disable all
+  automatic Asahi peripheral firmware loading.
+
+**Action required for existing installations:**
+
+- If your ESP already contains `vendorfw/firmware.cpio` (Asahi installer 0.8.0+),
+  no configuration change is needed.
+
+- If you explicitly set `hardware.asahi.peripheralFirmwareDirectory`,
+  no change is required. Consider switching to boot-time loading,
+  which is now the recommended default.
+
+- If you explicitly set `hardware.asahi.extractPeripheralFirmware = false`,
+  no change is required. Asahi peripheral firmware will not be loaded.
+
+- If you were relying on the previous default to extract legacy firmware
+  (e.g. from `/boot/asahi`), you must take action because boot-time loading
+  does not support the legacy `asahi/all_firmware.tar.gz` format. Either:
+  1. Rebuild your vendor firmware package to switch to boot-time
+     loading (recommended), or
+  2. Explicitly set `hardware.asahi.peripheralFirmwareDirectory` to your
+     legacy firmware directory to continue using eval-time extraction.
+
+To rebuild the vendor firmware package on your ESP, run the Asahi installer
+(`curl https://alx.sh/ | sh`) from macOS recovery and choose
+**"Rebuild vendor firmware package"** when prompted.
+
 
 ## 2025-11-18
 
