@@ -33,12 +33,10 @@ let
 in
 {
   config = lib.mkIf config.hardware.asahi.enable {
-    systemd.tmpfiles.rules = [
-      # Remove the old version first so it gets replaced every time
-      "r ${config.boot.loader.efi.efiSysMountPoint}/m1n1/boot.bin"
-      # Copy the new one
-      "C ${config.boot.loader.efi.efiSysMountPoint}/m1n1/boot.bin 0644 root root - ${bootFiles."m1n1/boot.bin"}"
-    ];
+    # install m1n1 with the boot loader
+    boot.loader.grub.extraFiles = bootFiles;
+    boot.loader.systemd-boot.extraFiles = bootFiles;
+    boot.loader.limine.additionalFiles = bootFiles;
 
     # ensure the installer has m1n1 in the image
     system.extraDependencies = lib.mkForce [
