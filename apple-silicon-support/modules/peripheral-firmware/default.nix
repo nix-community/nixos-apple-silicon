@@ -17,9 +17,6 @@
     ];
 
     hardware.firmware =
-      let
-        pkgs' = config.hardware.asahi.pkgs;
-      in
       lib.mkIf
         (
           (config.hardware.asahi.peripheralFirmwareDirectory != null)
@@ -30,16 +27,13 @@
             name = "asahi-peripheral-firmware";
 
             nativeBuildInputs = [
-              pkgs'.asahi-fwextract
               pkgs.cpio
             ];
 
             buildCommand = ''
-              mkdir extracted
-              asahi-fwextract ${config.hardware.asahi.peripheralFirmwareDirectory} extracted
+              cat ${config.hardware.asahi.peripheralFirmwareDirectory}/firmware.cpio | cpio -id --quiet --no-absolute-filenames
 
               mkdir -p $out/lib/firmware
-              cat extracted/firmware.cpio | cpio -id --quiet --no-absolute-filenames
               mv vendorfw/* $out/lib/firmware
             '';
           })
@@ -52,30 +46,41 @@
       default = true;
       description = ''
         Automatically extract the non-free non-redistributable peripheral
-        firmware necessary for features like Wi-Fi.
+        firmware necessary for features like Wi-Fi, Webcam or brightness sensor.
       '';
     };
 
     peripheralFirmwareDirectory = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
 
-      default = lib.findFirst (path: builtins.pathExists (path + "/all_firmware.tar.gz")) null [
+      default = lib.findFirst (path: builtins.pathExists (path + "/firmware.cpio")) null [
         # path when the system is operating normally
-        /boot/asahi
+        /boot/vendorfw
         # path when the system is mounted in the installer
-        /mnt/boot/asahi
+        /mnt/boot/vendorfw
       ];
 
       description = ''
         Path to the directory containing the non-free non-redistributable
-        peripheral firmware necessary for features like Wi-Fi. Ordinarily, this
-        will automatically point to the appropriate location on the ESP. Flake
-        users and those interested in maximum purity will want to copy those
-        files elsewhere and specify this manually.
+        peripheral firmware necessary for features like Wi-Fi, Webcam or
+        brightness sensor.
 
-        Currently, this consists of the files `all-firmware.tar.gz` and
-        `kernelcache*`. The official Asahi Linux installer places these files
-        in the `asahi` directory of the EFI system partition when creating it.
+        It is shipped in a `vendorfw/firmware.cpio` file on the ESP and put
+        there by the official Asahi Installer.
+
+        The installer can also be invoked from MacOS a second time to re-create
+        and add more firmware on an existing installation.
+
+        This currently defaults to the ESP.
+
+        Flake users, and those interested in maximum purity or building
+        their NixOS config from another machine will want to copy those files
+        elsewhere and specify the path manually.
+
+        In the future, this might be changed to default to loading the
+        `firmware.cpio` from the ESP at boot time, see
+        https://asahilinux.org/docs/platform/open-os-interop/#os-handling for
+        details.
       '';
     };
   };
