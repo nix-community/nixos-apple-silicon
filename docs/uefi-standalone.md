@@ -105,7 +105,7 @@ The installer ISO is now available as `installer/iso/nixos-*.iso`. Use `dd` or s
 
 ## UEFI Preparation
 
-This setup uses the alpha Asahi Linux installer to install a stub macOS and standard UEFI boot environment from which the NixOS installer and installed OS will run. These steps must be run from Terminal.app in macOS. You must also be logged into an administrator account.
+This setup uses the official Asahi Linux installer to install a stub macOS and standard UEFI boot environment from which the NixOS installer and installed OS will run. These steps must be run from Terminal.app in macOS. You must also be logged into an administrator account.
 
 #### Asahi Linux Installation
 
