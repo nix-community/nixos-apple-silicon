@@ -4,9 +4,34 @@ This file contains important information for each release.
 
 ## 2026-xx-xx
 
-Among others, the kernel has been updated to 6.18.x, and `apple_dcp` was renamed
-to `appledrm`, so users specifying the `apple_dcp.show_notch=1` kernelparam need to
-change it to `appledrm.show_notch=1`.
+Among other kernel updates, the kernel update to 6.18.x included a remame
+of `apple_dcp` to `appledrm`, so users specifying the `apple_dcp.show_notch=1`
+kernelparam need to change it to `appledrm.show_notch=1`.
+
+The kernel update to 7.x also brought support for the ambient light sensor.
+
+Using the sensor also requires extracting more firmware (including
+device-specific calibration data).
+
+This is done through the Asahi Installer. From your MacOS installation:
+
+ - `curl https://alx.sh | sh`
+ - Choose the “Rebuild vendor firmware package” option when prompted
+ - Quit the installer and reboot once this is done
+
+While preparing this, we noticed we were using an internal / deprecated firmware
+format.
+
+The `hardware.firmware.peripheralFirmwareDirectory` module option has been
+changed to default to `/boot/vendorfw`, and to read a `firmware.cpio` file from
+the specified path, rather than (internal) `asahi/all_firmware.tar.gz` firmware
+file we were using so far.
+
+Double-check your ESP partition now contains `vendorfw/firmware.cpio`.
+If you explicitly set this option to a path, make sure it points to the latest
+firmware.
+
+This is to align with https://asahilinux.org/docs/platform/open-os-interop/#linux-specific.
 
 
 ## 2025-11-18
@@ -92,7 +117,7 @@ To upgrade it:
   problems
 * Delete the macOS stub and EFI partitions ONLY, NOT the root partition
   (more info avaiable in the guide's uninstallation section)
-* Reinstall the UEFI environment into the free space using the Asahi installer
+* Reinstall the UEFI environment into the free space using the Asahi Installer
 * Rerun the NixOS installer (more info available in the guide's rescue section)
 
 ## 2025-04-27
