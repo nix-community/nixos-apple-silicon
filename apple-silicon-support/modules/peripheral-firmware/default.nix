@@ -46,7 +46,7 @@
       default = true;
       description = ''
         Automatically extract the non-free non-redistributable peripheral
-        firmware necessary for features like Wi-Fi, Webcam or brightness sensor.
+        firmware necessary for features like Wi-Fi, Webcam or ambient light sensor.
       '';
     };
 
@@ -63,7 +63,7 @@
       description = ''
         Path to the directory containing the non-free non-redistributable
         peripheral firmware necessary for features like Wi-Fi, Webcam or
-        brightness sensor.
+        ambient light sensor.
 
         It is shipped in a `vendorfw/firmware.cpio` file on the ESP and put
         there by the official Asahi Installer.
