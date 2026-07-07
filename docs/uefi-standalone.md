@@ -236,6 +236,9 @@ Add the `./apple-silicon-support` directory to the imports list and switch off t
       ./apple-silicon-support
     ];
 
+  # Enable basic nixos-apple-silicon support.
+  hardware.asahi.enable = true;
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;

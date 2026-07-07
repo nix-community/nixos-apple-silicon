@@ -34,6 +34,13 @@ firmware.
 
 This is to align with https://asahilinux.org/docs/platform/open-os-interop/#linux-specific.
 
+We now show a warning if the nixos-apple-silicon modules are imported, but
+`hardware.asahi.enable` (defaulting to true) is not explicitly set.
+This is in preparation for allowing of this module to be included
+unconditionally (and flipping the default to false).
+Explicitly set it to `true` to avoid accidentially getting this disabled in
+the future.
+
 
 ## 2025-11-18
 

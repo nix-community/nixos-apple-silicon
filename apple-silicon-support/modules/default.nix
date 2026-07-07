@@ -1,5 +1,6 @@
 {
   config,
+  options,
   pkgs,
   lib,
   ...
@@ -46,6 +47,17 @@ in
   options.hardware.asahi = {
     enable = lib.mkOption {
       type = lib.types.bool;
+      apply =
+        v:
+        lib.warnIf (options.hardware.asahi.enable.highestPrio == (lib.mkOptionDefault { }).priority) ''
+          You're currently relying on `hardware.asahi.enable` to default to true.
+
+          This will change in the future, to allow including the module unconditionally,
+          but explicitly enable on Asahi machines.
+
+          Please explicitly set `hardware.asahi.enable = true;`, to avoid this
+          suddenly being disabled in the future.
+        '' v;
       default = true;
       description = ''
         Enable the basic Asahi Linux components, such as kernel and boot setup.
