@@ -4,6 +4,10 @@
   lib,
   ...
 }:
+
+let
+  cfg = config.hardware.asahi;
+in
 {
   imports = [
     ./kernel
@@ -12,36 +16,32 @@
     ./sound
   ];
 
-  config =
-    let
-      cfg = config.hardware.asahi;
-    in
-    lib.mkIf cfg.enable {
-      nixpkgs.overlays = lib.mkIf (cfg.overlay != null) (lib.mkBefore [ cfg.overlay ]);
+  config = lib.mkIf cfg.enable {
+    nixpkgs.overlays = lib.mkIf (cfg.overlay != null) (lib.mkBefore [ cfg.overlay ]);
 
-      hardware.asahi.pkgs =
-        if cfg.pkgsSystem != "aarch64-linux" then
-          import (pkgs.path) {
-            crossSystem.system = "aarch64-linux";
-            localSystem.system = cfg.pkgsSystem;
-            overlays = [ cfg.overlay ];
-          }
-        else
-          pkgs;
+    hardware.asahi.pkgs =
+      if cfg.pkgsSystem != "aarch64-linux" then
+        import (pkgs.path) {
+          crossSystem.system = "aarch64-linux";
+          localSystem.system = cfg.pkgsSystem;
+          overlays = [ cfg.overlay ];
+        }
+      else
+        pkgs;
 
-      # 900 is higher priority than mkDefault but lower than just setting
-      hardware.sensor.iio.enable = lib.mkOverride 900 true;
-      hardware.graphics.package = lib.mkOverride 900 (
-        lib.warnIf
-          (lib.versionAtLeast pkgs.mesa.version "25.3" && lib.versionOlder pkgs.mesa.version "25.3.2")
-          ''
-            Mesa 25.3.0 and 25.3.1 are known to cause crashes in Firefox on Asahi
-            GPUs.  Please update to Mesa >= 25.3.2 by updating Nixpkgs.  See
-            https://github.com/nix-community/nixos-apple-silicon/issues/380 for
-            more info.''
-          pkgs.mesa
-      );
-    };
+    # 900 is higher priority than mkDefault but lower than just setting
+    hardware.sensor.iio.enable = lib.mkOverride 900 true;
+    hardware.graphics.package = lib.mkOverride 900 (
+      lib.warnIf
+        (lib.versionAtLeast pkgs.mesa.version "25.3" && lib.versionOlder pkgs.mesa.version "25.3.2")
+        ''
+          Mesa 25.3.0 and 25.3.1 are known to cause crashes in Firefox on Asahi
+          GPUs.  Please update to Mesa >= 25.3.2 by updating Nixpkgs.  See
+          https://github.com/nix-community/nixos-apple-silicon/issues/380 for
+          more info.''
+        pkgs.mesa
+    );
+  };
 
   options.hardware.asahi = {
     enable = lib.mkOption {
