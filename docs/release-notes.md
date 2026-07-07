@@ -9,6 +9,7 @@ of `apple_dcp` to `appledrm`, so users specifying the `apple_dcp.show_notch=1`
 kernelparam need to change it to `appledrm.show_notch=1`.
 
 The kernel update to 7.x also brought support for the ambient light sensor.
+To expose it to userspace, we now default to enabling `iio-sensor-proxy`.
 
 Using the sensor also requires extracting more firmware (including
 device-specific calibration data).

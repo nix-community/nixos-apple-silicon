@@ -30,6 +30,7 @@
           pkgs;
 
       # 900 is higher priority than mkDefault but lower than just setting
+      hardware.sensor.iio.enable = lib.mkOverride 900 true;
       hardware.graphics.package = lib.mkOverride 900 (
         lib.warnIf
           (lib.versionAtLeast pkgs.mesa.version "25.3" && lib.versionOlder pkgs.mesa.version "25.3.2")
