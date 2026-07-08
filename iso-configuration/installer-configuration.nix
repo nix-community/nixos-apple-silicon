@@ -64,6 +64,9 @@
       rm -rf /tmp/.fwsetup
     '';
 
+  # Enable basic nixos-apple-silicon support.
+  hardware.asahi.enable = true;
+
   # can't legally be incorporated into the installer image
   # (and is automatically extracted at boot above)
   hardware.asahi.extractPeripheralFirmware = false;
