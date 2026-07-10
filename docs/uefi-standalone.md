@@ -72,7 +72,7 @@ $ nix-shell -p python3Packages.{construct,pyserial} # Get dependencies for using
 $ make ARCH=aarch64-unknown-linux-gnu- CHAINLOADING=1 [...]
 ```
 
-To use some of the proxyclient features on on x86\_64, you'll need to adjust the cross-compilation prefix to match the targetPrefix used in Nixpkgs:
+To use some of the proxyclient features on x86\_64, you'll need to adjust the cross-compilation prefix to match the targetPrefix used in Nixpkgs:
 
 Replace `aarch64-linux-gnu-` with `aarch64-unknown-linux-gnu-` in `proxyclient/m1n1/toolchain.py`.
 
