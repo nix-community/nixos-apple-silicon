@@ -1,6 +1,7 @@
 final: prev: {
   linux-asahi = final.callPackage ./linux-asahi { };
   linux-asahi-fairydust = final.callPackage ./linux-asahi-fairydust { };
+  linux-asahi-wip = final.callPackage ./linux-asahi-wip { };
   uboot-asahi = final.callPackage ./uboot-asahi { };
   mesa =
     if prev.mesa.version == "26.0.5" then
