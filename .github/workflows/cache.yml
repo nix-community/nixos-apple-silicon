@@ -3,15 +3,10 @@ name: build packages (kernel etc.) and push to the cache
 on:
   push:
     branches:
-      - 'main'
-      - 'release-25.11'
       - 'ci-test'
-  schedule:
-    - cron: "0 6 * * *"
 
 jobs:
   packages-main:
-    if: github.ref == 'refs/heads/main'
     runs-on: namespace-profile-large-arm64
     continue-on-error: true
     strategy: &strategy-main
@@ -58,7 +53,6 @@ jobs:
           ${{ matrix.nixpkgs-override != '' && '|| echo "::warning ::Build failed"' || '' }}
 
   packages-release-2511:
-    if: github.ref == 'refs/heads/release-25.11' || github.event_name == 'schedule'
     runs-on: namespace-profile-large-arm64
     continue-on-error: true
     strategy: &strategy-release-2511
