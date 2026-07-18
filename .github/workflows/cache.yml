@@ -30,8 +30,10 @@ jobs:
       uses: actions/checkout@v7
       with:
         ref: "${{ matrix.ref }}"
-    - uses: namespacelabs/nscloud-cache-action@v1
+    - name: Cache ~/.cache/nix
+      uses: actions/cache@v6
       with:
+        key: cache-nix
         path: ~/.cache/nix
     - name: Install nix
       uses: cachix/install-nix-action@v31
