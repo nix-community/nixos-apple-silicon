@@ -31,7 +31,12 @@
             ];
 
             buildCommand = ''
-              cat ${config.hardware.asahi.peripheralFirmwareDirectory}/firmware.cpio | cpio -id --quiet --no-absolute-filenames
+              f=${config.hardware.asahi.peripheralFirmwareDirectory}/firmware.cpio
+              if [ ! -f $f ]; then
+                echo "firmware.cpio missing from peripheralFirmwareDirectory!"
+                exit 1
+              fi
+              cat $f | cpio -id --quiet --no-absolute-filenames
 
               mkdir -p $out/lib/firmware
               mv vendorfw/* $out/lib/firmware
