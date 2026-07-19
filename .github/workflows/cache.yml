@@ -41,11 +41,11 @@ jobs:
         extra_nix_config: |
           experimental-features = nix-command flakes
           access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-    # - uses: cachix/cachix-action@v17
-    #   with:
-    #     name: nixos-apple-silicon
-    #     authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-    #     signingKey: "${{ secrets.CACHIX_SIGNING_KEY }}"
+    - uses: cachix/cachix-action@v17
+      with:
+        name: nixos-apple-silicon
+        authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+        signingKey: "${{ secrets.CACHIX_SIGNING_KEY }}"
     - name: Build nix packages
       run: |
         nix run nixpkgs#nix-fast-build -- \
