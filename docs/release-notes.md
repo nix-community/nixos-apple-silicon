@@ -6,7 +6,8 @@ This file contains important information for each release.
 
 Among other kernel updates, the kernel update to 6.18.x included a remame
 of `apple_dcp` to `appledrm`, so users specifying the `apple_dcp.show_notch=1`
-kernelparam need to change it to `appledrm.show_notch=1`.
+kernelparam need to change it to `appledrm.show_notch=1`. Alternatively, you may
+set `hardware.asahi.notch.enable` instead.
 
 The kernel update to 7.x also brought support for the ambient light sensor.
 To expose it to userspace, we now default to enabling `iio-sensor-proxy`.
