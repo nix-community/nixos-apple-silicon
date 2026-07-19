@@ -305,7 +305,7 @@ Passphrase: <your passphrase>
 [iwd] exit
 ```
 
-If the installed NixOS version matches the version used by the installer (the default if not using flakes), and if the installer has not been cross-compiled (the default for official releases), the kernel will be copied over from the installer. Otherwise, the system will attempt to build the kernel in the installer environment which is generally not possible due to memory limitations. If the system will not install due to this, consider eenabling [the binary cache](https://github.com/nix-community/nixos-apple-silicon/blob/main/docs/binary-cache.md), changing nixpkgs versions temporarily, or building/downloading a native installer.
+If the installed NixOS version matches the version used by the installer (the default if not using flakes), and if the installer has not been cross-compiled (the default for official releases), the kernel will be copied over from the installer. Otherwise, the system will attempt to build the kernel in the installer environment which is generally not possible due to memory limitations. If the system will not install due to this, consider changing nixpkgs versions temporarily, or building/downloading a native installer.
 
 Once the network is set up, ensure the time is set correctly, then install the system. You will be asked to set a root password as the final step:
 ```

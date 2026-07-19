@@ -41,6 +41,9 @@ unconditionally (and flipping the default to false).
 Explicitly set it to `true` to avoid accidentially getting this disabled in
 the future.
 
+Due to limitations on the builders available, there currently is no binary
+cache. The docs have been updated to reflect this.
+
 
 ## 2025-11-18
 
