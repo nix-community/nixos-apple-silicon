@@ -2,6 +2,11 @@
 
 This file contains important information for each release.
 
+## 2026-xx-xx
+
+The `hardware.asahi.notch.enable` is avaliable as a option. This option is
+equivalent to the `appledrm.show_notch=1` kernelparam.
+
 ## 2026-07-30
 
 Among other kernel updates, the kernel update to 6.18.x included a remame
