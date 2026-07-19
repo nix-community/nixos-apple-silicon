@@ -30,6 +30,8 @@ in
       else
         pkgs;
 
+    boot.kernelParams = lib.mkIf cfg.notch.enable [ "appledrm.show_notch=1" ];
+
     # 900 is higher priority than mkDefault but lower than just setting
     hardware.sensor.iio.enable = lib.mkOverride 900 true;
     hardware.graphics.package = lib.mkOverride 900 (
@@ -96,6 +98,14 @@ in
       defaultText = "overlay provided with the module";
       description = ''
         The nixpkgs overlay for asahi packages.
+      '';
+    };
+
+    notch.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Extends the screen area into the notch on MacBooks.
       '';
     };
   };
