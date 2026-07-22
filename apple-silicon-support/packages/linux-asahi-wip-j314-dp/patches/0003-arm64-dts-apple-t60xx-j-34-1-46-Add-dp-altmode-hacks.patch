@@ -1,0 +1,98 @@
+From c8e26de076319dd9034f27681275ecd253f0ca11 Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Sat, 5 Nov 2022 21:22:50 +0100
+Subject: [PATCH 3/5] arm64: dts: apple: t60xx: j[34]1[46]: Add dp-altmode
+ hacks
+
+Blessed dp-altmode port is front left port on j314/j316/j414/j416.
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ .../arm64/boot/dts/apple/t600x-j314-j316.dtsi | 50 +++++++++++++++++++
+ 1 file changed, 50 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi b/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
+index 5f8f5dd48b92..09ca581e6e5d 100644
+--- a/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
++++ b/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
+@@ -9,6 +9,8 @@
+  * Copyright The Asahi Linux Contributors
+  */
+ 
++#define ENABLE_DCPEXT_TYPEC
++
+ #include <dt-bindings/leds/common.h>
+ 
+ / {
+@@ -22,6 +24,9 @@ aliases {
+ 		bluetooth0 = &bluetooth0;
+ 		dcp = &dcp;
+ 		dcpext0 = &dcpext0;
++#ifdef ENABLE_DCPEXT_TYPEC
++		dcpext1 = &dcpext1;
++#endif
+ 		disp0 = &display;
+ 		disp0_piodma = &disp0_piodma;
+ 		serial0 = &serial0;
+@@ -186,6 +191,11 @@ typec1: connector {
+ 			power-role = "dual";
+ 			data-role = "dual";
+ 
++#ifdef ENABLE_DCPEXT_TYPEC
++			/* hacks */
++			displayport = <&dcpext1>;
++#endif
++
+ 			ports {
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+@@ -247,6 +257,46 @@ hpm5: usb-pd@3a {
+ 	};
+ };
+ 
++#ifdef ENABLE_DCPEXT_TYPEC
++
++&display {
++	iommus = <&disp0_dart 0>, <&dispext0_dart 0>, <&dispext1_dart 0>;
++};
++
++&dispext1_dart {
++	status = "okay";
++};
++
++&dcpext1_dart {
++	status = "okay";
++};
++
++&dcpext1_mbox {
++	status = "okay";
++};
++
++&dcpext1 {
++	status = "okay";
++	apple,connector-type = "DP";
++
++	/* hacks */
++	apple,dptx-phy = <1>;
++	phys = <&atcphy1 PHY_TYPE_DP>;
++	phy-names = "dp-phy";
++	mux-controls = <&atcphy1_xbar 0>;
++	mux-control-names = "dp-xbar";
++	mux-index = <2>;
++};
++
++&dpaudio2 {
++	status = "okay";
++};
++
++&atcphy1_xbar {
++        status = "okay";
++};
++#endif
++
+ /* Virtual regulator representing the shared shutdown GPIO */
+ / {
+ 	speaker_sdz: fixed-regulator-sn012776-sdz {
+-- 
+2.54.0
+

@@ -1,0 +1,77 @@
+From adc6b688542a22053d9a06bfa7be88162e6d5680 Mon Sep 17 00:00:00 2001
+From: darbster145 <swoopmaster22@proton.me>
+Date: Wed, 22 Jul 2026 14:44:17 -0600
+Subject: [PATCH 5/5] usb: typec: tipd: clean up DP hotplug port
+
+---
+ .../arm64/boot/dts/apple/t600x-j314-j316.dtsi |  2 +-
+ drivers/usb/typec/tipd/core.c                 | 19 ++++++++++++++-----
+ 2 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi b/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
+index 216d74e908ed..875ab50f23dd 100644
+--- a/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
++++ b/arch/arm64/boot/dts/apple/t600x-j314-j316.dtsi
+@@ -293,7 +293,7 @@ &dpaudio2 {
+ };
+ 
+ &atcphy1_xbar {
+-        status = "okay";
++	status = "okay";
+ };
+ 
+ &ps_atc1_common {
+diff --git a/drivers/usb/typec/tipd/core.c b/drivers/usb/typec/tipd/core.c
+index abc417732855..1223e204320c 100644
+--- a/drivers/usb/typec/tipd/core.c
++++ b/drivers/usb/typec/tipd/core.c
+@@ -790,9 +790,9 @@ static void cd321x_update_work(struct work_struct *work)
+ 	if (old_role != USB_ROLE_NONE && (new_role != old_role || was_disconnected))
+ 		usb_role_switch_set_role(tps->role_sw, USB_ROLE_NONE);
+ 
+-	if (cd321x->connector_fwnode && (!dp_hpd || dp_hpd_changed)) {
+-		drm_connector_oob_hotplug_event(cd321x->connector_fwnode, connector_status_disconnected);
+-	}
++	if (cd321x->connector_fwnode && (!dp_hpd || dp_hpd_changed))
++		drm_connector_oob_hotplug_event(cd321x->connector_fwnode,
++						connector_status_disconnected);
+ 
+ 	/* Process partner disconnection or change */
+ 	if (!new_connected || partner_changed) {
+@@ -851,7 +851,8 @@ static void cd321x_update_work(struct work_struct *work)
+ 	usb_role_switch_set_role(tps->role_sw, new_role);
+ 
+ 	if (cd321x->connector_fwnode && dp_hpd)
+-		drm_connector_oob_hotplug_event(cd321x->connector_fwnode, connector_status_connected);
++		drm_connector_oob_hotplug_event(cd321x->connector_fwnode,
++						connector_status_connected);
+ 
+ 	power_supply_changed(tps->psy);
+ }
+@@ -859,7 +860,8 @@ static void cd321x_update_work(struct work_struct *work)
+ static void cd321x_queue_status(struct cd321x *cd321x)
+ {
+ 	cd321x->update_status.status_changed |= cd321x->update_status.status ^ cd321x->tps.status;
+-	cd321x->update_status.data_status_changed |= cd321x->update_status.data_status ^ cd321x->tps.data_status;
++	cd321x->update_status.data_status_changed |=
++		cd321x->update_status.data_status ^ cd321x->tps.data_status;
+ 
+ 	cd321x->update_status.status = cd321x->tps.status;
+ 	cd321x->update_status.pwr_status = cd321x->tps.pwr_status;
+@@ -1339,6 +1341,13 @@ cd321x_unregister_port(struct tps6598x *tps)
+ {
+ 	struct cd321x *cd321x = container_of(tps, struct cd321x, tps);
+ 
++	if (cd321x->connector_fwnode) {
++		drm_connector_oob_hotplug_event(cd321x->connector_fwnode,
++						connector_status_disconnected);
++		fwnode_handle_put(cd321x->connector_fwnode);
++		cd321x->connector_fwnode = NULL;
++	}
++
+ 	typec_mux_put(cd321x->mux);
+ 	cd321x->mux = NULL;
+ 	typec_unregister_altmode(cd321x->port_altmode_dp);
+-- 
+2.54.0
+

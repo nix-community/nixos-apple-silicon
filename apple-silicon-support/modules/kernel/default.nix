@@ -5,13 +5,31 @@
   lib,
   ...
 }:
+let
+  cfg = config.hardware.asahi;
+  kernelPackages = {
+    stable = "linux-asahi";
+    fairydust = "linux-asahi-fairydust";
+    wip = "linux-asahi-wip";
+    wip-j314-dp = "linux-asahi-wip-j314-dp";
+  };
+in
 {
-  config = lib.mkIf config.hardware.asahi.enable {
+  options.hardware.asahi.kernelVariant = lib.mkOption {
+    type = lib.types.enum (builtins.attrNames kernelPackages);
+    default = "stable";
+    description = ''
+      Asahi kernel variant to use. The wip-j314-dp variant provides
+      experimental DisplayPort alt mode support on J314 and J316 machines.
+    '';
+  };
+
+  config = lib.mkIf cfg.enable {
     boot.kernelPackages =
       let
-        pkgs' = config.hardware.asahi.pkgs;
+        pkgs' = cfg.pkgs;
       in
-      pkgs'.linux-asahi.override {
+      pkgs'.${kernelPackages.${cfg.kernelVariant}}.override {
         _kernelPatches = config.boot.kernelPatches;
       };
 

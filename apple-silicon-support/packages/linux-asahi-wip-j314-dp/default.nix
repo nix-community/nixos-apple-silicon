@@ -6,7 +6,7 @@
 }:
 
 let
-  linux-asahi-wip-pkg =
+  linux-asahi-wip-j314-dp-pkg =
     {
       stdenv,
       lib,
@@ -17,8 +17,8 @@ let
     buildLinux rec {
       inherit stdenv lib;
 
-      pname = "linux-asahi-wip";
-      version = "7.1.3-asahi-wip-f4dd286";
+      pname = "linux-asahi-wip-j314-dp";
+      version = "7.1.3-asahi-wip-j314-dp-f4dd286";
       modDirVersion = "7.1.3";
       extraMeta.branch = "7.1";
 
@@ -30,6 +30,26 @@ let
       };
 
       kernelPatches = [
+        {
+          name = "CD321x data status tracking";
+          patch = ./patches/0001-usb-typec-tipd-Track-data_status-changes-for-CD321x.patch;
+        }
+        {
+          name = "CD321x DRM hotplug events";
+          patch = ./patches/0002-usb-typec-tipd-HACK-Use-drm-oob-hotplug-event.patch;
+        }
+        {
+          name = "J314 and J316 DisplayPort alt mode";
+          patch = ./patches/0003-arm64-dts-apple-t60xx-j-34-1-46-Add-dp-altmode-hacks.patch;
+        }
+        {
+          name = "J314 and J316 ATC power domain workaround";
+          patch = ./patches/0004-HACK-arm64-dts-apple-t60xx-j-34-1-46-Mark-ps_atc1_co.patch;
+        }
+        {
+          name = "CD321x DP hotplug cleanup";
+          patch = ./patches/0005-usb-typec-tipd-clean-up-DP-hotplug-port.patch;
+        }
         {
           name = "Asahi config";
           patch = null;
@@ -58,6 +78,6 @@ let
       ++ _kernelPatches;
     };
 
-  linux-asahi-wip = callPackage linux-asahi-wip-pkg { };
+  linux-asahi-wip-j314-dp = callPackage linux-asahi-wip-j314-dp-pkg { };
 in
-lib.recurseIntoAttrs (linuxPackagesFor linux-asahi-wip)
+lib.recurseIntoAttrs (linuxPackagesFor linux-asahi-wip-j314-dp)
