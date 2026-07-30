@@ -249,6 +249,8 @@ The configuration above is the minimum required to produce a bootable system, bu
 
 Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi, Webcam or ambient light sensor. The Asahi Installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the Apple Silicon support module will automatically reference the files in the EFI system partition and incorporate them into your configuration to be managed by the normal NixOS mechanisms.
 
+If you're using flakes, you cannot point to paths outside your flake. In that case, `hardware.firmware.peripheralFirmwareDirectory` needs to be explicitly set to a directory containing `firmware.cpio` (copied from your ESP's `vendorfw/`).
+
 To update these Linux-loaded peripheral firmware files, use the Asahi Installer. From your MacOS installation:
 
  - `curl https://alx.sh | sh`
