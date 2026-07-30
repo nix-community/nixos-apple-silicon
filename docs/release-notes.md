@@ -2,7 +2,7 @@
 
 This file contains important information for each release.
 
-## 2026-xx-xx
+## 2026-07-30
 
 Among other kernel updates, the kernel update to 6.18.x included a remame
 of `apple_dcp` to `appledrm`, so users specifying the `apple_dcp.show_notch=1`
