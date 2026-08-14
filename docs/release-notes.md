@@ -23,7 +23,7 @@ This is done through the Asahi Installer. From your MacOS installation:
 While preparing this, we noticed we were using an internal / deprecated firmware
 format.
 
-The `hardware.firmware.peripheralFirmwareDirectory` module option has been
+The `hardware.asahi.peripheralFirmwareDirectory` module option has been
 changed to default to `/boot/vendorfw`, and to read a `firmware.cpio` file from
 the specified path, rather than (internal) `asahi/all_firmware.tar.gz` firmware
 file we were using so far.
