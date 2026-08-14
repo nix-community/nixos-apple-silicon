@@ -249,14 +249,14 @@ The configuration above is the minimum required to produce a bootable system, bu
 
 Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi, Webcam or ambient light sensor. The Asahi Installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the Apple Silicon support module will automatically reference the files in the EFI system partition and incorporate them into your configuration to be managed by the normal NixOS mechanisms.
 
-If you're using flakes, you cannot point to paths outside your flake. In that case, `hardware.firmware.peripheralFirmwareDirectory` needs to be explicitly set to a directory containing `firmware.cpio` (copied from your ESP's `vendorfw/`).
+If you're using flakes, you cannot point to paths outside your flake. In that case, `hardware.asahi.peripheralFirmwareDirectory` needs to be explicitly set to a directory containing `firmware.cpio` (copied from your ESP's `vendorfw/`).
 
 To update these Linux-loaded peripheral firmware files, use the Asahi Installer. From your MacOS installation:
 
  - `curl https://alx.sh | sh`
  - Choose the “Rebuild vendor firmware package” option when prompted
  - Quit the installer and reboot once this is done
- - Rebuild your system to pick up the new firmware files. If you explicitly set a path for `hardware.firmware.peripheralFirmwareDirectory`, making sure the `firmware.cpio` in there is up to date.
+ - Rebuild your system to pick up the new firmware files. If you explicitly set a path for `hardware.asahi.peripheralFirmwareDirectory`, making sure the `firmware.cpio` in there is up to date.
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 ```
