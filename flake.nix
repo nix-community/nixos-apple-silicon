@@ -58,11 +58,8 @@
           };
         in
         {
-          inherit (pkgs)
-            uboot-asahi
-            ;
-
           linux-asahi = pkgs.linux-asahi.kernel;
+          uboot-asahi = pkgs.uboot-asahi;
 
           installer-bootstrap =
             let
