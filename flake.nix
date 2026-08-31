@@ -24,6 +24,11 @@
         formatting = outputs.formatter.${system};
       });
 
+      nixbot = forAllSystems (system: {
+        inherit (outputs.checks."${system}") formatting;
+        inherit (outputs.packages."${system}") linux-asahi uboot-asahi installer-bootstrap;
+      });
+
       devShells = forAllSystems (system: {
         default = inputs.nixpkgs.legacyPackages.${system}.mkShellNoCC {
           packages = [ outputs.formatter.${system} ];
