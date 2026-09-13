@@ -34,6 +34,7 @@
       "macsmc-reboot"
       "i2c-pasemi-platform"
       "tps6598x"
+      "sn201202x"
       "apple-dart"
       "dwc3"
       "dwc3-of-simple"
