@@ -59,6 +59,9 @@ let
 
               APPLE_PMGR_MISC = yes;
               APPLE_PMGR_PWRSTATE = yes;
+
+              # Defaults to 'n', but needed to prevent bluetooth stuttering
+              BT_BRCMEXT = yes;
             };
             features.rust = true;
           }
