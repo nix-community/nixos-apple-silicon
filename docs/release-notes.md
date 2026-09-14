@@ -17,7 +17,7 @@ in `libva-v4l2_requests-sofus13`, and can be enabled with
 stability reasons.
 
 Added new *experimental support* for loading firmware at boot time from EFI
-system partition. The firmware gets unpacked into a tmpfs on `/lib/firmware`,
+system partition. The firmware gets unpacked into a tmpfs on `/lib/firmware/vendor`,
 where the kernel picks it up. To get this, set `hardware.asahi.peripheralFirmwareDirectory`
 to `null`. This might become the default in the future. This also means
 that flake users no longer have to copy the firmware into their flake.
