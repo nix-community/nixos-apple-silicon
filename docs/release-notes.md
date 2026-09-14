@@ -16,6 +16,12 @@ in `libva-v4l2_requests-sofus13`, and can be enabled with
 `hardware.asahi.avd.vaapi-support`, which is false by default for various
 stability reasons.
 
+Added new *experimental support* for loading firmware at boot time from EFI
+system partition. The firmware gets unpacked into a tmpfs on `/lib/firmware`,
+where the kernel picks it up. To get this, set `hardware.asahi.peripheralFirmwareDirectory`
+to `null`. This might become the default in the future. This also means
+that flake users no longer have to copy the firmware into their flake.
+
 ## 2026-07-30
 
 Among other kernel updates, the kernel update to 6.18.x included a remame
