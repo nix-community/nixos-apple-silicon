@@ -82,10 +82,10 @@
         their NixOS config from another machine will want to copy those files
         elsewhere and specify the path manually.
 
-        In the future, this might be changed to default to loading the
-        `firmware.cpio` from the ESP at boot time, see
+        You can set this to `null` to load the `firmware.cpio` from the ESP
+        at boot time, see
         https://asahilinux.org/docs/platform/open-os-interop/#os-handling for
-        details.
+        details. This might become the default in the future.
       '';
     };
   };
