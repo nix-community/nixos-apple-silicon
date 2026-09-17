@@ -17,12 +17,12 @@ Perusing this guide might also be useful to users of other distros. Most of the 
 
 Damage to the macOS recovery partitions or the partition table could result in the Mac becoming unbootable and loss of all data on the internal NVMe drive. In this circumstance, a suitable USB cable and another computer which can run [idevicerestore](https://github.com/libimobiledevice/idevicerestore) will be required to perform a DFU upgrade and restore normal operation. Backups are always wise.
 
-While you will end up with a reasonably usable computer, the exact hardware features you want [may not be ready yet](https://github.com/AsahiLinux/docs/wiki/%22When-will-Asahi-Linux-be-done%3F%22). Please consult the [Asahi Linux Feature Support page](https://github.com/AsahiLinux/docs/wiki/Feature-Support) for information. Any features marked with a kernel version or `linux-asahi` should be supported by NixOS too.
+While you will end up with a reasonably usable computer, the exact hardware features you want [may not be ready yet](https://asahilinux.org/docs/project/when-will-asahi-be-done/). Please consult the [Asahi Linux Feature Support page](https://asahilinux.org/docs/platform/feature-support/overview/) for information. Any features marked with a kernel version or `linux-asahi` should be supported by NixOS too.
 
 #### Prerequisites
 
 The following items are required to get started:
-* Apple Silicon Mac [supported by Asahi Linux](https://github.com/AsahiLinux/docs/wiki/Feature-Support#table-of-contents) with macOS 12.3 or later and an admin account
+* Apple Silicon Mac [supported by Asahi Linux](https://asahilinux.org/docs/platform/feature-support/overview/) with macOS 12.3 or later and an admin account
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased
 * Familiarity with the command line and installers without GUIs
