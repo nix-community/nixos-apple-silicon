@@ -53,7 +53,7 @@ in
 
         path = [
           pkgs.cpio
-          pkgs.util-linux
+          pkgs.mtools
         ];
 
         serviceConfig = {
@@ -64,43 +64,23 @@ in
             set -eu
 
             VENDORFW=/lib/firmware/vendor
-
-            # mount_sys_esp from asahi-scripts' functions.sh
-            mountpoint=/run/.system-efi
-            mkdir -p "$mountpoint"
-            while grep -q " $mountpoint " /proc/mounts; do
-              umount "$mountpoint"
-            done
-
             esp_uuid="$(sed 's/\x00//' /proc/device-tree/chosen/asahi,efi-system-partition)"
-            # nixos-rebuild switch means that the mountpoint might be already mounted
-            # use bind mount instead
-            esp_mnt="$(findmnt --first-only --noheadings --output TARGET --source "PARTUUID=$esp_uuid" || true)"
-            if [ -n "$esp_mnt" ]; then
-              mount --bind "$esp_mnt" "$mountpoint"
-              echo ":: Asahi: Bind-mounted System ESP from $esp_mnt at $mountpoint"
-            else
-              mount -o ro "PARTUUID=$esp_uuid" "$mountpoint"
-              echo ":: Asahi: Mounted System ESP at $mountpoint"
-            fi
-
-            if [ ! -e "$mountpoint/vendorfw/firmware.cpio" ]; then
-              echo ":: Asahi: Vendor firmware not found in ESP." >&2
-              umount "$mountpoint"
+            staging="$(mktemp --directory --tmpdir="$VENDORFW")"
+            if ! mcopy -i "/dev/disk/by-partuuid/$esp_uuid" \
+              "::/vendorfw/firmware.cpio" "$staging/firmware.cpio"; then
+              echo ":: Asahi: Failed to copy vendor firmware from ESP." >&2
+              rm -rf "$staging"
               exit 1
             fi
 
             echo ":: Asahi: Unpacking vendor firmware..."
-            staging="$(mktemp -d -p "$VENDORFW")"
-            ( cd "$staging"; cpio --quiet -i < "$mountpoint/vendorfw/firmware.cpio" )
+            ( cd "$staging"; cpio --quiet -i < firmware.cpio )
             mv "$staging"/vendorfw/* "$VENDORFW"
             if [ -e "$staging/vendorfw/.vendorfw.manifest" ]; then
               mv "$staging"/vendorfw/.vendorfw.manifest "$VENDORFW"
             fi
             rm -rf "$staging"
             echo ":: Asahi firmware unpacked successfully"
-
-            umount "$mountpoint"
           '';
         };
       };
