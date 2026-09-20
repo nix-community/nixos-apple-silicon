@@ -45,7 +45,7 @@ in
           DefaultDependencies = false;
           ConditionPathExists = [
             "/proc/device-tree/chosen/asahi,efi-system-partition"
-            # already loaded, either by the bootloader or by an earlier start
+            # already loaded, either by the bootloader or by an earlier run of this service
             "!/lib/firmware/vendor/.vendorfw.manifest"
           ];
           RequiresMountsFor = "/lib/firmware/vendor";
