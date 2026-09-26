@@ -17,6 +17,38 @@
       ]; # "i686-linux" omitted
 
       forAllSystems = inputs.nixpkgs.lib.genAttrs systems;
+
+      installer-bootstrap-custom = system: extraModules:
+        let
+          installer-system = inputs.nixpkgs.lib.nixosSystem {
+            inherit system;
+
+            specialArgs = {
+              modulesPath = inputs.nixpkgs + "/nixos/modules";
+            };
+
+            modules = [
+              ./iso-configuration
+              {
+                hardware.asahi.pkgsSystem = system;
+
+                # make sure this matches the post-install
+                # `hardware.asahi.pkgsSystem`
+                nixpkgs.hostPlatform.system = "aarch64-linux";
+                nixpkgs.buildPlatform.system = system;
+                nixpkgs.overlays = [ outputs.overlays.default ];
+              }
+            ] ++ extraModules;
+          };
+
+          config = installer-system.config;
+        in
+        (config.system.build.isoImage.overrideAttrs (old: {
+          # add ability to access the whole config from the command line
+          passthru = (old.passthru or { }) // {
+            inherit config;
+          };
+        }));
     in
     {
       formatter = forAllSystems (system: inputs.nixpkgs.legacyPackages.${system}.nixfmt-tree);
@@ -46,6 +78,10 @@
         default = outputs.nixosModules.apple-silicon-support;
       };
 
+      lib = {
+        inherit installer-bootstrap-custom;
+      };
+
       packages = forAllSystems (
         system:
         let
@@ -61,37 +97,7 @@
           linux-asahi = pkgs.linux-asahi.kernel;
           inherit (pkgs) uboot-asahi libva-v4l2_request-sofus13;
 
-          installer-bootstrap =
-            let
-              installer-system = inputs.nixpkgs.lib.nixosSystem {
-                inherit system;
-
-                specialArgs = {
-                  modulesPath = inputs.nixpkgs + "/nixos/modules";
-                };
-
-                modules = [
-                  ./iso-configuration
-                  {
-                    hardware.asahi.pkgsSystem = system;
-
-                    # make sure this matches the post-install
-                    # `hardware.asahi.pkgsSystem`
-                    nixpkgs.hostPlatform.system = "aarch64-linux";
-                    nixpkgs.buildPlatform.system = system;
-                    nixpkgs.overlays = [ outputs.overlays.default ];
-                  }
-                ];
-              };
-
-              config = installer-system.config;
-            in
-            (config.system.build.isoImage.overrideAttrs (old: {
-              # add ability to access the whole config from the command line
-              passthru = (old.passthru or { }) // {
-                inherit config;
-              };
-            }));
+          installer-bootstrap = installer-bootstrap-custom system [ ];
         }
       );
     };
