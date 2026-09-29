@@ -18,7 +18,7 @@
 
       forAllSystems = inputs.nixpkgs.lib.genAttrs systems;
 
-      installer-bootstrap-custom = system: extraModules:
+      mkInstaller-bootstrap-custom = { system, extraModules }:
         let
           installer-system = inputs.nixpkgs.lib.nixosSystem {
             inherit system;
@@ -79,7 +79,7 @@
       };
 
       lib = {
-        inherit installer-bootstrap-custom;
+        inherit mkInstaller-bootstrap-custom;
       };
 
       packages = forAllSystems (
@@ -97,7 +97,10 @@
           linux-asahi = pkgs.linux-asahi.kernel;
           inherit (pkgs) uboot-asahi libva-v4l2_request-sofus13;
 
-          installer-bootstrap = installer-bootstrap-custom system [ ];
+          installer-bootstrap = mkInstaller-bootstrap-custom {
+            inherit system;
+            extraModules = [ ];
+          };
         }
       );
     };
