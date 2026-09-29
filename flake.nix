@@ -18,7 +18,7 @@
 
       forAllSystems = inputs.nixpkgs.lib.genAttrs systems;
 
-      mkInstallerBootstrapCustom = { system, extraModules }:
+      mkInstallerBootstrapCustom = { system, extraModules ? [] }:
         let
           installer-system = inputs.nixpkgs.lib.nixosSystem {
             inherit system;
@@ -99,7 +99,6 @@
 
           installer-bootstrap = mkInstallerBootstrapCustom {
             inherit system;
-            extraModules = [ ];
           };
         }
       );
