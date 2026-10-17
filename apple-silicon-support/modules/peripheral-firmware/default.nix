@@ -12,28 +12,33 @@ let
 in
 {
   config = lib.mkIf config.hardware.asahi.enable {
-    systemd = lib.mkIf extractAtBoot {
+    assertions = [
+      {
+        assertion = extractAtBoot -> config.boot.initrd.systemd.enable;
+        message = ''
+          Extracting the Asahi peripheral firmware at boot
+          (`hardware.asahi.peripheralFirmwareDirectory = null`) requires
+          systemd in the initrd (`boot.initrd.systemd.enable = true`).
+        '';
+      }
+    ];
+
+    boot.initrd.systemd = lib.mkIf extractAtBoot {
       mounts = [
         {
           what = "vendorfw";
-          where = "/lib/firmware/vendor";
+          where = "/sysroot/lib/firmware/vendor";
           type = "tmpfs";
           options = "mode=0755";
-          unitConfig.DefaultDependencies = false;
-          conflicts = [ "umount.target" ];
-          before = [
-            "umount.target"
-            "sysinit.target"
-          ];
-          wantedBy = [ "sysinit.target" ];
+          wantedBy = [ "initrd-fs.target" ];
         }
       ];
 
       services.asahi-peripheral-firmware = {
         description = "Extract Asahi peripheral firmware from the EFI system partition";
 
-        after = [ "systemd-udevd.service" ];
         before = [
+          "systemd-udevd.service"
           "systemd-udev-trigger.service"
           "sysinit.target"
           "shutdown.target"
@@ -41,47 +46,86 @@ in
         conflicts = [ "shutdown.target" ];
         wantedBy = [ "sysinit.target" ];
 
-        unitConfig = {
-          DefaultDependencies = false;
-          ConditionPathExists = [
-            "/proc/device-tree/chosen/asahi,efi-system-partition"
-            # already loaded, either by the bootloader or by an earlier run of this service
-            "!/lib/firmware/vendor/.vendorfw.manifest"
-          ];
-          RequiresMountsFor = "/lib/firmware/vendor";
-        };
+        unitConfig.DefaultDependencies = false;
 
         path = [
+          pkgs.coreutils
+          pkgs.gnused
           pkgs.cpio
           pkgs.mtools
+          config.boot.initrd.systemd.package.kmod
+          config.boot.initrd.systemd.package.util-linux # findfs
         ];
 
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
-          # https://github.com/AsahiLinux/asahi-scripts/blob/main/dracut/modules.d/99asahi-firmware/load-asahi-firmware.sh
-          ExecStart = pkgs.writeShellScript "load-asahi-firmware" ''
-            set -eu
+        };
 
-            VENDORFW=/lib/firmware/vendor
-            esp_uuid="$(sed 's/\x00//' /proc/device-tree/chosen/asahi,efi-system-partition)"
-            staging="$(mktemp --directory --tmpdir="$VENDORFW")"
-            if ! mcopy -i "/dev/disk/by-partuuid/$esp_uuid" \
-              "::/vendorfw/firmware.cpio" "$staging/firmware.cpio"; then
-              echo ":: Asahi: Failed to copy vendor firmware from ESP." >&2
-              rm -rf "$staging"
-              exit 1
-            fi
+        # https://github.com/AsahiLinux/asahi-scripts/blob/main/dracut/modules.d/99asahi-firmware/load-asahi-firmware.sh
+        script = ''
+          # `/lib` is a store path in the initrd, so this can't be done at build time
+          mkdir -p /lib/firmware
+          ln -s /vendorfw /lib/firmware/vendor
 
-            echo ":: Asahi: Unpacking vendor firmware..."
-            ( cd "$staging"; cpio --quiet -i < firmware.cpio )
-            mv "$staging"/vendorfw/* "$VENDORFW"
-            if [ -e "$staging/vendorfw/.vendorfw.manifest" ]; then
-              mv "$staging"/vendorfw/.vendorfw.manifest "$VENDORFW"
-            fi
+          if [ -e /vendorfw ]; then
+            echo ":: Asahi: Vendor firmware was loaded by the bootloader"
+            exit 0
+          fi
+
+          if [ ! -e /proc/device-tree/chosen/asahi,efi-system-partition ]; then
+            echo ":: Asahi: Missing asahi,efi-system-partition variable, firmware will not be loaded!"
+            exit 0
+          fi
+
+          echo ":: Asahi: Triggering early load of NVMe modules..."
+          modprobe nvme-apple
+
+          for i in $(seq 0 50); do
+            [ -e /sys/bus/platform/drivers/nvme-apple/*.nvme/nvme/nvme*/nvme*n1/ ] && break
+            sleep 0.1
+          done
+
+          if [ ! -e /sys/bus/platform/drivers/nvme-apple/*.nvme/nvme/nvme*/nvme*n1/ ]; then
+            echo ":: Asahi: Timed out waiting for NVMe device" >&2
+            exit 1
+          fi
+
+          esp_uuid="$(sed 's/\x00//' /proc/device-tree/chosen/asahi,efi-system-partition)"
+          esp="$(findfs "PARTUUID=$esp_uuid")"
+
+          staging="$(mktemp --directory)"
+          if ! mcopy -i "$esp" \
+            "::/vendorfw/firmware.cpio" "$staging/firmware.cpio"; then
+            echo ":: Asahi: Failed to copy vendor firmware from ESP." >&2
             rm -rf "$staging"
-            echo ":: Asahi firmware unpacked successfully"
-          '';
+            exit 1
+          fi
+
+          echo ":: Asahi: Unpacking vendor firmware..."
+          ( cd "$staging"; cpio --quiet -i < firmware.cpio )
+          mv "$staging"/vendorfw /vendorfw
+          rm -rf "$staging"
+          echo ":: Asahi firmware unpacked successfully"
+        '';
+      };
+
+      # https://github.com/AsahiLinux/asahi-scripts/blob/main/dracut/modules.d/99asahi-firmware/install-asahi-firmware.sh
+      services.asahi-peripheral-firmware-install = {
+        description = "Install Asahi peripheral firmware to the root filesystem";
+
+        wantedBy = [ "initrd.target" ];
+        before = [ "initrd.target" ];
+
+        unitConfig = {
+          ConditionPathExists = "/vendorfw";
+          RequiresMountsFor = "/sysroot/lib/firmware/vendor";
+        };
+
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = "/bin/cp -a /vendorfw/. /sysroot/lib/firmware/vendor";
         };
       };
     };
@@ -153,7 +197,7 @@ in
         elsewhere and specify the path manually.
 
         You can set this to `null` to load the `firmware.cpio` from the ESP
-        at boot time, see
+        at boot time (requires `boot.initrd.systemd.enable`), see
         https://asahilinux.org/docs/platform/open-os-interop/#os-handling for
         details. This might become the default in the future.
       '';
