@@ -55,14 +55,6 @@ in
 
         unitConfig.DefaultDependencies = false;
 
-        path = [
-          pkgs.coreutils
-          pkgs.gnused
-          pkgs.cpio
-          config.boot.initrd.systemd.package.kmod
-          config.boot.initrd.systemd.package.util-linux
-        ];
-
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
@@ -103,7 +95,7 @@ in
           VENDORFW="/run/.system-efi/vendorfw/"
 
           mkdir -p /run/.system-efi
-          esp_uuid="$(sed 's/\x00//' /proc/device-tree/chosen/asahi,efi-system-partition)"
+          esp_uuid="$(tr -d '\0' < /proc/device-tree/chosen/asahi,efi-system-partition)"
           mount "PARTUUID=$esp_uuid" /run/.system-efi
 
           if [ ! -e "$VENDORFW/firmware.cpio" ]; then
@@ -112,7 +104,7 @@ in
             exit 1
           fi
 
-          ( cd /; cpio --quiet -i < "$VENDORFW/firmware.cpio" )
+          ( cd /; ${lib.getExe pkgs.cpio} --quiet -i < "$VENDORFW/firmware.cpio" )
           echo ":: Asahi firmware unpacked successfully"
           umount /run/.system-efi
         '';
