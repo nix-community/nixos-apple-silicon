@@ -31,6 +31,8 @@ in
     ];
 
     boot.initrd.systemd = lib.mkIf extractAtBoot {
+      extraBin.cpio = lib.getExe pkgs.cpio;
+
       mounts = [
         {
           what = "vendorfw";
@@ -104,7 +106,7 @@ in
             exit 1
           fi
 
-          ( cd /; ${lib.getExe pkgs.cpio} --quiet -i < "$VENDORFW/firmware.cpio" )
+          ( cd /; cpio --quiet -i < "$VENDORFW/firmware.cpio" )
           echo ":: Asahi firmware unpacked successfully"
           umount /run/.system-efi
         '';
