@@ -16,6 +16,13 @@ in `libva-v4l2_requests-sofus13`, and can be enabled with
 `hardware.asahi.avd.vaapi-support`, which is false by default for various
 stability reasons.
 
+Added new *experimental support* for loading firmware at boot time from EFI
+system partition, which helps flake users to avoid copying the firmware into
+their flake. The firmware gets unpacked into a tmpfs on `/lib/firmware/vendor`,
+where the kernel picks it up. To enable this feature, set `hardware.asahi.peripheralFirmwareDirectory`
+to `null`. You have to use systemd in the initrd via `boot.initrd.systemd.enable`,
+which is the NixOS default.
+
 ## 2026-07-30
 
 Among other kernel updates, the kernel update to 6.18.x included a remame
