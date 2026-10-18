@@ -23,6 +23,13 @@ in
       }
     ];
 
+    # for mounting the ESP
+    boot.initrd.availableKernelModules = lib.mkIf extractAtBoot [
+      "vfat"
+      "nls_cp437"
+      "nls_iso8859-1"
+    ];
+
     boot.initrd.systemd = lib.mkIf extractAtBoot {
       mounts = [
         {
@@ -52,9 +59,8 @@ in
           pkgs.coreutils
           pkgs.gnused
           pkgs.cpio
-          pkgs.mtools
           config.boot.initrd.systemd.package.kmod
-          config.boot.initrd.systemd.package.util-linux # findfs
+          config.boot.initrd.systemd.package.util-linux
         ];
 
         serviceConfig = {
@@ -91,22 +97,24 @@ in
             exit 1
           fi
 
-          esp_uuid="$(sed 's/\x00//' /proc/device-tree/chosen/asahi,efi-system-partition)"
-          esp="$(findfs "PARTUUID=$esp_uuid")"
+          # If the above exists, hopefully the /dev device exists and this will work
+          echo ":: Asahi: Unpacking vendor firmware into initramfs..."
 
-          staging="$(mktemp --directory)"
-          if ! mcopy -i "$esp" \
-            "::/vendorfw/firmware.cpio" "$staging/firmware.cpio"; then
-            echo ":: Asahi: Failed to copy vendor firmware from ESP." >&2
-            rm -rf "$staging"
+          VENDORFW="/run/.system-efi/vendorfw/"
+
+          mkdir -p /run/.system-efi
+          esp_uuid="$(sed 's/\x00//' /proc/device-tree/chosen/asahi,efi-system-partition)"
+          mount "PARTUUID=$esp_uuid" /run/.system-efi
+
+          if [ ! -e "$VENDORFW/firmware.cpio" ]; then
+            echo ":: Asahi: Vendor firmware not found in ESP." >&2
+            umount /run/.system-efi
             exit 1
           fi
 
-          echo ":: Asahi: Unpacking vendor firmware..."
-          ( cd "$staging"; cpio --quiet -i < firmware.cpio )
-          mv "$staging"/vendorfw /vendorfw
-          rm -rf "$staging"
+          ( cd /; cpio --quiet -i < "$VENDORFW/firmware.cpio" )
           echo ":: Asahi firmware unpacked successfully"
+          umount /run/.system-efi
         '';
       };
 
