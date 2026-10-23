@@ -17,7 +17,7 @@ in
     hardware.graphics = lib.mkIf (cfg.avd.vaapi-support) {
       enable = true;
       extraPackages = [
-        pkgs.libva-v4l2_request-sofus13
+        cfg.pkgs.libva-v4l2_request-sofus13
       ];
     };
 
