@@ -7,7 +7,7 @@
 {
   config = lib.mkIf config.hardware.asahi.enable (
     let
-      bootM1n1 = pkgs.m1n1.override (
+      bootM1n1 = config.boot.package.override (
         lib.optionalAttrs (config.boot.m1n1CustomLogo != null) {
           customLogo = config.boot.m1n1CustomLogo;
         }
@@ -53,6 +53,14 @@
         Append extra options to the m1n1 boot binary. Might be useful for fixing
         display problems on Mac minis.
         https://github.com/AsahiLinux/m1n1/issues/159
+      '';
+    };
+
+    package = lib.mkOption {
+      type = lib.types.package;
+      default = config.hardware.asahi.pkgs.m1n1;
+      description = ''
+        m1n1 package to use.
       '';
     };
 
