@@ -3,9 +3,10 @@
   fetchFromGitHub,
   buildUBoot,
   m1n1,
+  linux-asahi,
 }:
 
-(buildUBoot rec {
+buildUBoot rec {
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "u-boot";
@@ -28,15 +29,16 @@
     CONFIG_VIDEO_FONT_16X32=y
     CONFIG_CMD_BOOTMENU=y
   '';
-}).overrideAttrs
-  (o: {
-    # nixos's downstream patches are not applicable
-    patches = [
-    ];
 
-    preInstall = ''
-      # compress so that m1n1 knows U-Boot's size and can find things after it
-      gzip -n u-boot-nodtb.bin
-      cat ${m1n1}/lib/m1n1/m1n1.bin arch/arm/dts/t[68]*.dtb u-boot-nodtb.bin.gz > m1n1-u-boot.bin
-    '';
-  })
+  postBuild = ''
+    # compress so that m1n1 knows U-Boot's size and can find things after it
+    gzip -n u-boot-nodtb.bin
+
+    # See m1n1 .github/workflows/release.yml
+    cat ${m1n1}/lib/m1n1/m1n1.bin \
+        ${linux-asahi.kernel}/dtbs/apple/t60*.dtb \
+        ${linux-asahi.kernel}/dtbs/apple/t81*.dtb \
+        u-boot-nodtb.bin.gz \
+        > m1n1-u-boot.bin
+  '';
+}
