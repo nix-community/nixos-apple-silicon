@@ -12,17 +12,6 @@ let
 in
 {
   config = lib.mkIf config.hardware.asahi.enable {
-    assertions = [
-      {
-        assertion = extractAtBoot -> config.boot.initrd.systemd.enable;
-        message = ''
-          Extracting the Asahi peripheral firmware at boot
-          (`hardware.asahi.peripheralFirmwareDirectory = null`) requires
-          systemd in the initrd (`boot.initrd.systemd.enable = true`).
-        '';
-      }
-    ];
-
     # for mounting the ESP
     boot.initrd.availableKernelModules = lib.mkIf extractAtBoot [
       "vfat"
@@ -199,7 +188,7 @@ in
         elsewhere and specify the path manually.
 
         You can set this to `null` to load the `firmware.cpio` from the ESP
-        at boot time (requires `boot.initrd.systemd.enable`), see
+        at boot time (requires systemd in initrd, default on NixOS), see
         https://asahilinux.org/docs/platform/open-os-interop/#os-handling for
         details. This might become the default in the future.
       '';
