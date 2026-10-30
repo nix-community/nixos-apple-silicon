@@ -17,19 +17,22 @@ in `libva-v4l2_requests-sofus13`, and can be enabled with
 stability reasons.
 
 Apple Silicon requires a large amount of firmware blobs, some of which need
-to be loaded by the linux kernel. Currently, the only mechanism this repository
-gives you to load the firmware is to load it into your /nix/store at evaluation
-time - either from the EFI System Partition, or from custom path. While this works,
-it poses difficulty when you want to update the firmware. To help improve this,
-better follow the [upstream documentation] and also help flake users, this
-release adds new *experimental support* for loading firmware at boot time.
+to be loaded by the linux kernel.
+
+For a long time, the only mechanism to load the firmware provided was to load it
+into your /nix/store at evaluation time - either from the EFI System Partition,
+or from custom path.
+
+While this works, it poses difficulty, both when using flakes or when needing to
+update the firmware. To improve this, and also to better follow the [upstream
+documentation], this release adds new *experimental support* for loading
+firmware at boot time.
 
 [upstream documentation]: https://asahilinux.org/docs/platform/open-os-interop/#firmware-provisioning
 
-The firmware gets unpacked into a tmpfs on `/lib/firmware/vendor`, where the kernel 
-then picks it up. To enable this feature, set `hardware.asahi.peripheralFirmwareDirectory`
-to `null`. You have to use systemd in the initrd via `boot.initrd.systemd.enable`,
-which is the NixOS default.
+When explicitly setting `hardware.asahi.peripheralFirmwareDirectory` to `null`,
+the firmware gets unpacked into a tmpfs on `/lib/firmware/vendor`, where the kernel 
+then picks it up. You have to use systemd in the initrd, which is the NixOS default.
 
 ## 2026-07-30
 
