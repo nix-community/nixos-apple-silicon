@@ -58,6 +58,9 @@
       "xhci-plat-hcd"
       "usbhid"
       "hid_generic"
+
+      "thunderbolt_apple"
+      "reset_apple_cio"
     ];
 
     boot.kernelParams = [
