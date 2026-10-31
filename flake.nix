@@ -95,7 +95,7 @@
         in
         {
           linux-asahi = pkgs.linux-asahi.kernel;
-          inherit (pkgs) uboot-asahi libva-v4l2_request-sofus13;
+          inherit (pkgs) uboot-asahi asahi-va-driver;
 
           installer-bootstrap = mkInstallerBootstrapCustom {
             inherit system;
