@@ -44,28 +44,15 @@
           ;;
       esac
     done
-
-    echo Extracting Asahi firmware...
-    mkdir -p /tmp/.fwsetup/{esp,extracted}
-
-    mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /tmp/.fwsetup/esp
-    ${pkgs.asahi-fwextract}/bin/asahi-fwextract /tmp/.fwsetup/esp/asahi /tmp/.fwsetup/extracted
-    umount /tmp/.fwsetup/esp
-
-    pushd /tmp/.fwsetup/
-    cat /tmp/.fwsetup/extracted/firmware.cpio | ${pkgs.cpio}/bin/cpio -id --quiet --no-absolute-filenames
-    mkdir -p /lib/firmware
-    mv vendorfw/* /lib/firmware
-    popd
-    rm -rf /tmp/.fwsetup
   '';
 
   # Enable basic nixos-apple-silicon support.
   hardware.asahi.enable = true;
 
+  # Extract peripheral firmware from the ESP at boot time.
   # can't legally be incorporated into the installer image
-  # (and is automatically extracted at boot above)
-  hardware.asahi.extractPeripheralFirmware = false;
+  hardware.asahi.extractPeripheralFirmware = true;
+  hardware.asahi.peripheralFirmwareDirectory = null;
 
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
