@@ -10,14 +10,15 @@
   linuxHeaders,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libva-v4l2_request-sofus13";
-  version = "1.3";
+  pname = "asahi-va-driver";
+  version = "2.0";
+  __structuredAttrs = true;
 
   src = fetchFromGitHub {
-    owner = "sofus13";
-    repo = "libva-v4l2_request";
+    owner = "AsahiLinux";
+    repo = "asahi-va-driver";
     tag = finalAttrs.version;
-    hash = "sha256-qN/IEte/kFd2Zi9DSPTYSehCkE3MenV9a8n0LBXuICQ=";
+    hash = "sha256-caIFHEBrgMhxLoXLJCn3JrZPcy3MAox5apXjvy3RxI8=";
   };
 
   nativeBuildInputs = [
@@ -36,20 +37,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-Ddriverdir=${placeholder "out"}/lib/dri"
   ];
 
-  postInstall = ''
-    mv $out/lib/dri/v4l2_request{,-sofus13}_drv_video.so
-  '';
-
   meta = {
-    description = "VA-API (libva) backend driver for V4L2 stateless video decoders using the Media Request API";
+    description = "VA-API (libva) backend driver for V4L2 stateless video decoders.";
     longDescription = ''
-      A fork of the upstream https://xff.cz/git/libva-v4l2_request/ with a few fixes that were noticed with AVD. It itself is a fork of https://github.com/bootlin/libva-v4l2-request.
+      A fork of the upstream https://xff.cz/git/libva-v4l2_request/. This version focuses on Apple Silicon.
 
       When support is available in the kernel and hardware, this allows hardware decoding of MPEG-2, H.264, HEVC, VP8, VP9 and AV1 through VA-API. AVD has support for all of these apart from VP8 and MPEG-2, though AV-1 is only supported on M3+.
     '';
-    homepage = "https://github.com/sofus13/libva-v4l2_request";
+    homepage = "https://github.com/AsahiLinux/asahi-va-driver";
     license = lib.licenses.gpl3Plus;
-    maintainers = [ lib.maintainers.sempiternal-aurora ];
+    maintainers = with lib.maintainers; [
+      flokli
+      sempiternal-aurora
+    ];
     platforms = lib.platforms.linux;
   };
 })
