@@ -11,10 +11,16 @@ isn't supported by a lot of media engines (gstreamer has basic support,
 ffmpeg/mpv requires patches).
 
 To combat this, there is a wrapper driver for `v4l2_requests` that exposes a
-VA-API interface, for which support is much more common. This is packaged here
-in `libva-v4l2_requests-sofus13`, and can be enabled with
-`hardware.asahi.avd.vaapi-support`, which is false by default for various
-stability reasons.
+VA-API interface, for which support is much more common. This is packaged
+upstream as `asahi-va-driver`, and can be enabled with
+`hardware.asahi.avd.vaapi-support = true`.
+
+By default, the firmware is built only with the `VP.9` and `av1` codecs
+supported, for various licensing reasons. If you want more support, the
+`hardware.asahi.avd.codecs` option allows you to specify what codecs to support.
+The default value `[ "all_free" ]` has its dual `[ "all" ]` if you want to
+just use all codecs regardless of licensing issues, otherwise you can specify
+an explicit list of codecs you want supported, e.g. `[ "vp9" "h264" ]`.
 
 Apple Silicon requires a large amount of firmware blobs, some of which need
 to be loaded by the linux kernel.
