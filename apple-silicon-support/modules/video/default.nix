@@ -17,12 +17,12 @@ in
     hardware.graphics = lib.mkIf (cfg.avd.vaapi-support) {
       enable = true;
       extraPackages = [
-        cfg.pkgs.libva-v4l2_request-sofus13
+        cfg.pkgs.asahi-va-driver
       ];
     };
 
     environment.sessionVariables = lib.mkIf (cfg.avd.vaapi-support) {
-      LIBVA_DRIVER_NAME = "v4l2_request-sofus13";
+      LIBVA_DRIVER_NAME = "asahi";
     };
   };
 
@@ -38,7 +38,7 @@ in
       type = lib.types.bool;
       default = false;
       description = ''
-        Use libva-v4l2_request-sofus13 to expose a vaapi interface with AVD (Experimental)
+        Use asahi-va-driver to expose a vaapi interface with AVD (Experimental)
       '';
     };
   };

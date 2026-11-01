@@ -1,5 +1,5 @@
 final: prev: {
-  libva-v4l2_request-sofus13 = final.callPackage ./libva-v4l2_request-sofus13 { };
+  asahi-va-driver = final.callPackage ./asahi-va-driver { };
   linux-asahi = final.callPackage ./linux-asahi { };
   uboot-asahi = final.callPackage ./uboot-asahi { };
   mesa =
