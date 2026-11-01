@@ -7,7 +7,7 @@
 {
   config = lib.mkIf config.hardware.asahi.enable (
     let
-      bootM1n1 = config.boot.package.override (
+      bootM1n1 = config.boot.m1n1Package.override (
         lib.optionalAttrs (config.boot.m1n1CustomLogo != null) {
           customLogo = config.boot.m1n1CustomLogo;
         }
@@ -56,7 +56,7 @@
       '';
     };
 
-    package = lib.mkOption {
+    m1n1Package = lib.mkOption {
       type = lib.types.package;
       default = config.hardware.asahi.pkgs.m1n1;
       description = ''
