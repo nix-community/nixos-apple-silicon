@@ -95,7 +95,7 @@
         in
         {
           linux-asahi = pkgs.linux-asahi.kernel;
-          inherit (pkgs) uboot-asahi asahi-va-driver;
+          inherit (pkgs) uboot-asahi;
 
           installer-bootstrap = mkInstallerBootstrapCustom {
             inherit system;
