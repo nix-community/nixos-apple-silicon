@@ -26,15 +26,15 @@ let
         inherit stdenv lib;
 
         pname = "linux-asahi";
-        version = "7.2.14";
+        version = "7.2.15";
         modDirVersion = version;
         extraMeta.branch = "7.2";
 
         src = fetchFromGitHub {
           owner = "AsahiLinux";
           repo = "linux";
-          tag = "asahi-7.2.14-1";
-          hash = "sha256-oY14m+oQv3BRU5fRbGxnrmYTVo7nRc3OKyj3jlg5wFs=";
+          tag = "asahi-7.2.15-1";
+          hash = "sha256-46U5b2xovXJZZDBIjrAXVvD6VsXY9ATPa8yBOJFZM3A=";
         };
 
         kernelPatches = [
