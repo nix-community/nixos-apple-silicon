@@ -1,5 +1,4 @@
 final: prev: {
-  asahi-va-driver = final.callPackage ./asahi-va-driver { };
   linux-asahi = final.callPackage ./linux-asahi { };
   uboot-asahi = final.callPackage ./uboot-asahi { };
   mesa =
