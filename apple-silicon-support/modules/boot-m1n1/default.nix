@@ -15,6 +15,7 @@
 
       bootUBoot = config.hardware.asahi.pkgs.uboot-asahi.override {
         m1n1 = bootM1n1;
+        linux-asahi = config.boot.kernelPackages;
       };
 
       bootFiles = {
