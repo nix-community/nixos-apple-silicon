@@ -62,6 +62,13 @@ let
 
               # Defaults to 'n', but needed to prevent bluetooth stuttering
               BT_BRCMEXT = yes;
+
+              # TODO: Delete me when TYR fixes applied
+              # https://github.com/AsahiLinux/linux/issues/673
+              # asahi adds some fields to OpMapRequest, a gpuvm structure that Tyr
+              # uses, but we don't initialise these new fields for them. Should
+              # be fixed sometime hopefully.
+              DRM_TYR = no;
             };
             features.rust = true;
           }
