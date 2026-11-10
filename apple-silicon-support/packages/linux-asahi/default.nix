@@ -26,15 +26,15 @@ let
         inherit stdenv lib;
 
         pname = "linux-asahi";
-        version = "7.3.3";
+        version = "7.2.15";
         modDirVersion = version;
-        extraMeta.branch = "7.3";
+        extraMeta.branch = "7.2";
 
         src = fetchFromGitHub {
           owner = "AsahiLinux";
           repo = "linux";
-          tag = "asahi-7.3.3-1";
-          hash = "sha256-ly6HBI8yCFWpaY0BlVGSvyF0Dq3lpeZnv6Y2clTjYMk=";
+          tag = "asahi-7.2.15-2";
+          hash = "sha256-q5kIQl0w/yn4dqM5rPqq2pFenxgi53XjCBa3MUlyQKI=";
         };
 
         kernelPatches = [
@@ -62,13 +62,6 @@ let
 
               # Defaults to 'n', but needed to prevent bluetooth stuttering
               BT_BRCMEXT = yes;
-
-              # TODO: Delete me when TYR fixes applied
-              # https://github.com/AsahiLinux/linux/issues/673
-              # asahi adds some fields to OpMapRequest, a gpuvm structure that Tyr
-              # uses, but we don't initialise these new fields for them. Should
-              # be fixed sometime hopefully.
-              DRM_TYR = no;
             };
             features.rust = true;
           }
