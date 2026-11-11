@@ -26,15 +26,15 @@ let
         inherit stdenv lib;
 
         pname = "linux-asahi";
-        version = "7.2.15";
+        version = "7.3.3";
         modDirVersion = version;
-        extraMeta.branch = "7.2";
+        extraMeta.branch = "7.3";
 
         src = fetchFromGitHub {
           owner = "AsahiLinux";
           repo = "linux";
-          tag = "asahi-7.2.15-2";
-          hash = "sha256-q5kIQl0w/yn4dqM5rPqq2pFenxgi53XjCBa3MUlyQKI=";
+          tag = "asahi-7.3.3-2";
+          hash = "sha256-qDFmFpd7B9zkkmeFU0HLTJPQ67z2hhS5ZzFWu6ztvlo=";
         };
 
         kernelPatches = [
@@ -62,6 +62,13 @@ let
 
               # Defaults to 'n', but needed to prevent bluetooth stuttering
               BT_BRCMEXT = yes;
+
+              # 10 Gigabit mac mini ethernet port support
+              NET_VENDOR_AQUANTIA = yes;
+
+              # TODO: Delete when this makes it's way upstream:
+              # https://github.com/NixOS/nixpkgs/pull/585528
+              DRM_TYR = no;
             };
             features.rust = true;
           }
