@@ -156,41 +156,38 @@ in
       default = true;
       description = ''
         Automatically extract the non-free non-redistributable peripheral
-        firmware necessary for features like Wi-Fi, Webcam or ambient light sensor.
+        firmware and device-specific calibration data necessary for features
+        like Wi-Fi, Webcam or ambient light sensor.
+
+        If disabled, all firmware needs to be populated by `hardware.firmware` instead,
+        causing `firmware.cpio` to be ignored.
       '';
     };
 
     peripheralFirmwareDirectory = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
 
-      default = lib.findFirst (path: builtins.pathExists (path + "/firmware.cpio")) null [
-        # path when the system is operating normally
-        /boot/vendorfw
-        # path when the system is mounted in the installer
-        /mnt/boot/vendorfw
-      ];
+      default = null;
 
       description = ''
-        Path to the directory containing the non-free non-redistributable
-        peripheral firmware necessary for features like Wi-Fi, Webcam or
-        ambient light sensor.
+        If set, needs to point to a path containing `firmware.cpio`,
+        usually shipped in a `vendorfw/` directory on the ESP.
 
-        It is shipped in a `vendorfw/firmware.cpio` file on the ESP and put
-        there by the official Asahi Installer.
+        This file contains the non-free non-redistributable peripheral firmware
+        and device-specific calibration data necessary for features like Wi-Fi,
+        Webcam or ambient light sensor.
 
-        The installer can also be invoked from MacOS a second time to re-create
-        and add more firmware on an existing installation.
+        It is placed there (and occasionally regenerated) by the official Asahi Installer.
 
-        This currently defaults to the ESP.
+        It is recommended to leave this set to `null`, which will then load
+        `firmware.cpio` from the ESP at boot time (in the initrd).
 
-        Flake users, and those interested in maximum purity or building
-        their NixOS config from another machine will want to copy those files
-        elsewhere and specify the path manually.
+        See https://asahilinux.org/docs/platform/open-os-interop/#os-handling
+        for details.
 
-        You can set this to `null` to load the `firmware.cpio` from the ESP
-        at boot time (requires systemd in initrd, default on NixOS), see
-        https://asahilinux.org/docs/platform/open-os-interop/#os-handling for
-        details. This might become the default in the future.
+        Setting this to a path will extract firmware at build time, but it's
+        discouraged, as it's especially painful to keep this up to date and in
+        sync with what's on your ESP.
       '';
     };
   };

@@ -4,6 +4,25 @@ This file contains important information for each release.
 
 ## YYYY-MM-DD (unreleased)
 
+Apple Silicon requires a large amount of firmware blobs, some of which need
+to be loaded by the linux kernel.
+
+For a long time, the only mechanism to load the firmware provided was to load it
+into your /nix/store at evaluation time - either from the EFI System Partition,
+or from custom path.
+
+While this works, it poses difficulty, both when using flakes or when needing to
+update the firmware. To improve this, and also to better follow the [upstream
+documentation], this release switches to loading firmware at boot time.
+
+[upstream documentation]: https://asahilinux.org/docs/platform/open-os-interop/#firmware-provisioning
+
+`hardware.asahi.peripheralFirmwareDirectory` now defaults to `null`, and
+firmware and device-specific calibration data gets loaded from the ESP at boot
+time.
+You're encouraged to remove leftover `hardware.asahi.peripheralFirmwareDirectory`
+config options to prevent footguns in the future, whenever firmware is regenerated.
+
 Support for the Apple Video Decoder (AVD) has been added, and is enabled by
 `hardware.asahi.avd.enable` (`true` by default). Currently, the kernel
 driver/firmware only supports the Video 4 Linux 2 (V4L2) Requests api, which
@@ -21,24 +40,6 @@ supported, for various licensing reasons. If you want more support, the
 The default value `[ "all_free" ]` has its dual `[ "all" ]` if you want to
 just use all codecs regardless of licensing issues, otherwise you can specify
 an explicit list of codecs you want supported, e.g. `[ "vp9" "h264" ]`.
-
-Apple Silicon requires a large amount of firmware blobs, some of which need
-to be loaded by the linux kernel.
-
-For a long time, the only mechanism to load the firmware provided was to load it
-into your /nix/store at evaluation time - either from the EFI System Partition,
-or from custom path.
-
-While this works, it poses difficulty, both when using flakes or when needing to
-update the firmware. To improve this, and also to better follow the [upstream
-documentation], this release adds new *experimental support* for loading
-firmware at boot time.
-
-[upstream documentation]: https://asahilinux.org/docs/platform/open-os-interop/#firmware-provisioning
-
-When explicitly setting `hardware.asahi.peripheralFirmwareDirectory` to `null`,
-the firmware gets unpacked into a tmpfs on `/lib/firmware/vendor`, where the kernel 
-then picks it up. You have to use systemd in the initrd, which is the NixOS default.
 
 ## 2026-07-30
 
