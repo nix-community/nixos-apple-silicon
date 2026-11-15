@@ -247,16 +247,14 @@ Add the `./apple-silicon-support` directory to the imports list and switch off t
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
-Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi, Webcam or ambient light sensor. The Asahi Installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the Apple Silicon support module will automatically reference the files in the EFI system partition and incorporate them into your configuration to be managed by the normal NixOS mechanisms.
-
-If you're using flakes, you cannot point to paths outside your flake. In that case, `hardware.asahi.peripheralFirmwareDirectory` needs to be explicitly set to a directory containing `firmware.cpio` (copied from your ESP's `vendorfw/`).
+Various non-free non-redistributable peripheral firmware and device-specific calibration files are required to use system hardware like Wi-Fi, Webcam or ambient light sensor. The Asahi Installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation.
 
 To update these Linux-loaded peripheral firmware files, use the Asahi Installer. From your MacOS installation:
 
  - `curl https://alx.sh | sh`
  - Choose the “Rebuild vendor firmware package” option when prompted
  - Quit the installer and reboot once this is done
- - Rebuild your system to pick up the new firmware files. If you explicitly set a path for `hardware.asahi.peripheralFirmwareDirectory`, making sure the `firmware.cpio` in there is up to date.
+ - If you explicitly set a path for `hardware.asahi.peripheralFirmwareDirectory`, making sure the `firmware.cpio` in there is up to date.
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 ```
@@ -350,7 +348,7 @@ Rerunning the installer will create a new generation but not touch any user data
 # nixos-install --no-root-password --no-channel-copy
 ```
 
-In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup. You might also wish to re-copy the peripheral firmware files.
+In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup.
 
 #### NixOS Updates
 

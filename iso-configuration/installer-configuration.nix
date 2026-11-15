@@ -49,11 +49,6 @@
   # Enable basic nixos-apple-silicon support.
   hardware.asahi.enable = true;
 
-  # Extract peripheral firmware from the ESP at boot time.
-  # can't legally be incorporated into the installer image
-  hardware.asahi.extractPeripheralFirmware = true;
-  hardware.asahi.peripheralFirmwareDirectory = null;
-
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
   environment.systemPackages = with pkgs; [ wormhole-william ];
