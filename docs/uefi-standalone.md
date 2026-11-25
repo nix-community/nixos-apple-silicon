@@ -149,10 +149,10 @@ Shut down the machine fully. Connect the flash drive with the installer ISO to a
 Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot might try to boot it first.
 To instead boot from USB:
  - Hit a key to stop autoboot when prompted
- - Run the command `eficonfig`
- - Select "Change Boot Order", ensure `usb 0` is on the top (you can use the `+` key to move it to the top).
- - "Save" boot order, "Quit" `eficonfig`.
- - Run the `boot` command.
+ - Run the command `bootmenu -e` to show all boot options
+ - Hit an arrow key quickly to ensure it doesn't automatically boot the default option
+ - Navigate to the option `USB 0`, if available, and hit enter to boot it
+ - If the `USB 0` option isn't available, press the escape key to exit the bootmenu. Try replugging the usb and running the `usb reset` command, then try `bootmenu -e` again
 
 GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine).
 
