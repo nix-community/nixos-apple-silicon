@@ -10,10 +10,10 @@ buildUBoot rec {
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2026.07-2";
-    hash = "sha256-9E79VceZcPw55zj6BBwgIBP/2OrHRS/w3ypGyOWfE6U=";
+    rev = "asahi-v2026.07-3";
+    hash = "sha256-GOuoDg0d77fXMZMzoeBfKqIPlZUZCDnD+OHy+q6o/JY=";
   };
-  version = "2026.07-2-asahi";
+  version = "2026.07-3-asahi";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
